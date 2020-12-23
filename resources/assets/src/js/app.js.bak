@@ -1,0 +1,14 @@
+'use strict';
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register(tify.pwa.sw)
+        .then(function (registration) {
+          console.log('[Service worker] Ready');
+          registration.update();
+        })
+        .catch(function (error) {
+          console.log('[Service worker] Registration failed with ' + error);
+        });
+  });
+}
