@@ -2,26 +2,10 @@
 
 namespace Pollen\Pwa\Partial;
 
-use tiFy\Partial\PartialDriver;
-use Pollen\Pwa\PwaAwareTrait;
 use tiFy\Support\Proxy\Url;
 
-class CameraCapturePartial extends PartialDriver
+class CameraCapturePartial extends AbstractPwaPartial
 {
-    use PwaAwareTrait;
-
-    /**
-     * @inheritDoc
-     */
-    public function boot(): void
-    {
-        parent::boot();
-
-        $this->set(
-            'viewer.directory', $this->pwa()->resources()->path('views/partial/camera-capture')
-        );
-    }
-
     /**
      * @inheritDoc
      */
@@ -34,12 +18,20 @@ class CameraCapturePartial extends PartialDriver
                     //'controls',
                     'autoplay',
                     'muted',
-                    'poster' => Url::root($this->pwa()->resources()->rel('assets/images/photo-camera.png'))
+                    'poster' => Url::root($this->pwa()->resources()->rel('assets/src/img/photo-camera.png'))
                 ],
                 'tag' => 'video'
             ]
         ]);
 
         return parent::render();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function viewDirectory(): string
+    {
+        return $this->pwa()->resources()->path('views/partial/camera-capture');
     }
 }

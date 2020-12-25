@@ -2,9 +2,10 @@
 
 namespace Pollen\Pwa;
 
-use Exception;
+use RuntimeException;
 use Psr\Container\ContainerInterface as Container;
-use Pollen\Pwa\Contracts\Pwa as PwaContract;
+use Pollen\Pwa\Contracts\PwaAdapterContract;
+use Pollen\Pwa\Contracts\PwaManagerContract;
 use Pollen\Pwa\Partial\CameraCapturePartial;
 use Pollen\Pwa\Partial\InstallPromotionPartial;
 use tiFy\Routing\Strategy\AppStrategy;
@@ -17,13 +18,13 @@ use tiFy\Support\Proxy\Router;
 use tiFy\Support\Proxy\Storage;
 use tiFy\Support\ParamsBag;
 
-class Pwa implements PwaContract
+class Pwa implements PwaManagerContract
 {
     use BootableTrait, ContainerAwareTrait;
 
     /**
      * Instance de l'extension de gestion d'optimisation de site.
-     * @var PwaContract|null
+     * @var PwaManagerContract|null
      */
     private static $instance;
 
@@ -40,10 +41,16 @@ class Pwa implements PwaContract
     private $resources;
 
     /**
+     * Instance de l'adapteur associé
+     * @var PwaAdapterContract|null
+     */
+    protected $adapter;
+
+    /**
      * Liste des services par défaut fournis par conteneur d'injection de dépendances.
      * @var array
      */
-    protected array $defaultProviders = [
+    protected $defaultProviders = [
         'controller' => PwaController::class
     ];
 
@@ -69,7 +76,7 @@ class Pwa implements PwaContract
     /**
      * @inheritDoc
      */
-    public static function instance(): EmbedContract
+    public static function instance(): PwaManagerContract
     {
         if (self::$instance instanceof self) {
             return self::$instance;
@@ -80,24 +87,20 @@ class Pwa implements PwaContract
     /**
      * @inheritDoc
      */
-    public function boot(): PwaContract
+    public function boot(): PwaManagerContract
     {
         if (!$this->isBooted()) {
             /** Routage */
-            Router::setControllerStack([
-                'pwa' => $this->getContainer()->get('pwa.controller')
-            ]);
+            $controller = $this->getContainer()->get(PwaController::class);
 
-            Router::get('/manifest.webmanifest', ['pwa', 'manifest'])->strategy('json');
-
-            Router::get('/offline.html', ['pwa', 'offline'])->setStrategy(new AppStrategy());
-
-            Router::get('/sw.js', ['pwa', 'serviceWorker'])->setStrategy(new AppStrategy());
+            Router::get('/manifest.webmanifest', [$controller, 'manifest'])->strategy('json');
+            Router::get('/offline.html', [$controller, 'offline'])->setStrategy(new AppStrategy());
+            Router::get('/sw.js', [$controller, 'serviceWorker'])->setStrategy(new AppStrategy());
             /**/
 
             /** Partials */
-            Partial::register('pwa-camera-capture', (new CameraCapturePartial())->setPwa($this));
-            Partial::register('pwa-install-promotion', (new InstallPromotionPartial())->setPwa($this));
+            Partial::register('pwa-camera-capture', CameraCapturePartial::class);
+            Partial::register('pwa-install-promotion', InstallPromotionPartial::class);
             /**/
 
             add_action('wp_head', function () {
@@ -149,5 +152,25 @@ class Pwa implements PwaContract
             $this->resources = Storage::local(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'resources');
         }
         return is_null($path) ? $this->resources : $this->resources->path($path);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setAdapter(PwaAdapterContract $adapter): PwaManagerContract
+    {
+        $this->adapter = $adapter;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setConfig(array $attrs): PwaManagerContract
+    {
+        $this->config($attrs);
+
+        return $this;
     }
 }

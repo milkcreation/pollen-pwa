@@ -16,7 +16,7 @@
 
     <div class="PwaInstallPromotion-action">
         <button class="PwaButton PwaButton--1 PwaButton--alt PwaInstallPromotion-button" class="Install">
-            <?php _e('Installer', 'tify'); ?>
+            <?php _e('Installer', 'pollen-pwa'); ?>
         </button>
     </div>
 
