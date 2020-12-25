@@ -2,6 +2,8 @@
 
 namespace Pollen\Pwa;
 
+use Pollen\Pwa\Contracts\PwaManagerContract;
+use Psr\Container\ContainerInterface as Container;
 use tiFy\Contracts\Http\Response;
 use tiFy\Contracts\View\Engine;
 use tiFy\Routing\BaseController;
@@ -11,6 +13,17 @@ use tiFy\Support\Proxy\View;
 class PwaController extends BaseController
 {
     use PwaAwareTrait;
+
+    /**
+     * @param PwaManagerContract $pwaManager
+     * @param Container|null $container
+     */
+    public function __construct(PwaManagerContract $pwaManager, ?Container $container = null)
+    {
+        $this->setPwaManager($pwaManager);
+
+        parent::__construct($container);
+    }
 
     /**
      * Manifest
@@ -24,13 +37,13 @@ class PwaController extends BaseController
             "short_name"           => get_bloginfo('name'),
             "icons"                => [
                 [
-                    "src"     => Url::root($this->pwa()->resources()->rel("assets/images/192.png"))->path(),
+                    "src"     => Url::root($this->pwa()->resources()->rel("assets/src/img/192.png"))->path(),
                     "sizes"   => "192x192",
                     "type"    => "image/png",
                     "purpose" => "any maskable"
                 ],
                 [
-                    "src"     => Url::root($this->pwa()->resources()->rel("assets/images/512.png"))->path(),
+                    "src"     => Url::root($this->pwa()->resources()->rel("assets/src/img/512.png"))->path(),
                     "sizes"   => "512x512",
                     "type"    => "image/png",
                     "purpose" => "any maskable"
@@ -55,8 +68,9 @@ class PwaController extends BaseController
      *
      * @return Response
      */
-    public function offline()
+    public function offline(): Response
     {
+
         return $this->view('app/offline', [
             'css' => $this->getOfflineCss()
         ]);
@@ -69,7 +83,7 @@ class PwaController extends BaseController
      */
     protected function getOfflineCss(): string
     {
-        return file_get_contents($this->pwa()->resources()->path('assets/css/app/offline.css'));
+        return file_get_contents($this->pwa()->resources('assets/dist/css/app/offline.css'));
     }
 
     /**
@@ -79,7 +93,7 @@ class PwaController extends BaseController
      */
     public function serviceWorker(): Response
     {
-        $content = file_get_contents($this->pwa()->resources()->path('assets/js/sw.js'));
+        $content = file_get_contents($this->pwa()->resources('assets/src/js/sw.js'));
 
         return $this->response($content, 200, ['Content-Type' => 'application/javascript']);
     }
