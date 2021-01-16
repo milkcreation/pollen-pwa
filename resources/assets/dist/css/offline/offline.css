@@ -5,7 +5,7 @@ body {
     text-align: center;
 }
 
-.PwaOffline {
+.PwaOffline-container {
     position: absolute;
     top: 50%;
     left: 0;

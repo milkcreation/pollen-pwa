@@ -1,8 +1,8 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Pollen\Pwa\Partial;
-
-use Pollen\Pwa\PwaAwareTrait;
 
 class InstallPromotionPartial extends AbstractPwaPartial
 {
@@ -11,15 +11,21 @@ class InstallPromotionPartial extends AbstractPwaPartial
      */
     public function defaultParams(): array
     {
-        return array_merge(parent::defaultParams(), [
-            /**
-             * @var string fixed|fixed-bottom
-             */
-            'style'   => 'fixed',
-            'title'   => __('Installation', 'pollen-pwa'),
-            'content' => __('L\'installation n\'utilise quasiment pas de stockage et offre un moyen rapide et facile' .
-                ' de revenir à cette application', 'pollen-pwa')
-        ]);
+        return array_merge(
+            parent::defaultParams(),
+            [
+                /**
+                 * @var string fixed|fixed-bottom
+                 */
+                'style'   => 'fixed',
+                'title'   => __('Installation', 'pollen-pwa'),
+                'content' => __(
+                    'L\'installation n\'utilise quasiment pas de stockage et offre un moyen rapide et facile' .
+                    ' de revenir à cette application',
+                    'pollen-pwa'
+                ),
+            ]
+        );
     }
 
     /**
@@ -27,13 +33,15 @@ class InstallPromotionPartial extends AbstractPwaPartial
      */
     public function render(): string
     {
-        $this->set([
-            'attrs.id'    => 'PwaInstallPromotion',
-            'attrs.class' => sprintf(
-                '%s hidden PwaInstallPromotion--' . $this->get('style'),
-                $this->get('attrs.class')
-            )
-        ]);
+        $this->set(
+            [
+                'attrs.id'    => 'PwaInstallPromotion',
+                'attrs.class' => sprintf(
+                    '%s hidden PwaInstallPromotion--' . $this->get('style'),
+                    $this->get('attrs.class')
+                ),
+            ]
+        );
 
         return parent::render();
     }

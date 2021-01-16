@@ -1,5 +1,6 @@
-@import "../../variables";
-@import "../../mixins/elements";
+// Variables
+@import "../variables";
+@import "../mixins/elements";
 
 // Personnalisation
 .PwaInstallPromotion {
@@ -48,4 +49,29 @@
 
 .PwaInstallPromotion-action {
   text-align: right;
+}
+
+.PwaInstallPromotion-close {
+  display: block;
+  position: absolute;
+  border:none;
+  background-color: transparent;
+  top: 5px;
+  right: 5px;
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1;
+
+  &::before {
+    content: "\2715";
+    vertical-align: middle;
+  }
+
+  &,
+  &:hover,
+  &:active,
+  &:focus,
+  &:visited {
+    color: map-get($pwa-colors, "white");
+  }
 }

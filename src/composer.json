@@ -1,27 +1,26 @@
 {
   "name": "presstify-plugins/pwa",
   "description": "Progressive Web App Manager.",
-  "type": "presstify-plugin",
+  "homepage": "https://www.presstify.com/pollen-solutions/pwa/",
   "keywords": [
     "presstify",
     "plugins",
     "wordpress",
     "pwa"
   ],
-  "homepage": "https://svn.tigreblanc.fr/presstify-plugins/pwa/",
-  "time": "2020-10-31",
+  "time": "2021-01-07",
   "license": "proprietary",
   "authors": [
     {
       "name": "Jordy Manner",
-      "email": "jordy.manner@milkcreation.fr",
-      "role": "Lead Developper"
+      "email": "jordy@presstify.com",
+      "role": "Developper"
     }
   ],
   "repositories": [
     {
       "type": "composer",
-      "url": "https://composer.tigreblanc.fr/presstify/"
+      "url": "https://composer.presstify.com/pollen-solutions/"
     }
   ],
   "require": {

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Pollen\Pwa\Contracts;
 
@@ -9,6 +11,7 @@ use tiFy\Contracts\Support\ParamsBag;
 /**
  * @mixin \tiFy\Support\Concerns\BootableTrait
  * @mixin \tiFy\Support\Concerns\ContainerAwareTrait
+ * @mixin \tiFy\Support\Concerns\PartialManagerAwareTrait
  */
 interface PwaManagerContract
 {
@@ -37,15 +40,6 @@ interface PwaManagerContract
      * @return int|string|array|object|ParamsBag
      */
     public function config($key = null, $default = null);
-
-    /**
-     * Récupération d'un service fourni par le conteneur d'injection de dépendance.
-     *
-     * @param string $name
-     *
-     * @return callable|object|string|null
-     */
-    public function provider(string $name);
 
     /**
      * Chemin absolu vers une ressources (fichier|répertoire).

@@ -1,13 +1,17 @@
-<?php declare(strict_types=1);
+<?php
+declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
 use Pollen\Pwa\Contracts\PwaManagerContract;
 use Pollen\Pwa\Adapters\WordpressAdapter;
+use Pollen\Pwa\Controller\PwaController;
+use Pollen\Pwa\Controller\PwaOfflineController;
+use Pollen\Pwa\Controller\PwaPushController;
 use Pollen\Pwa\Partial\CameraCapturePartial;
 use Pollen\Pwa\Partial\InstallPromotionPartial;
 use tiFy\Container\ServiceProvider;
-use tiFy\Contracts\Partial\Partial as PartialManager;
+use tiFy\Partial\Contracts\PartialContract;
 
 class PwaServiceProvider extends ServiceProvider
 {
@@ -19,8 +23,10 @@ class PwaServiceProvider extends ServiceProvider
         CameraCapturePartial::class,
         InstallPromotionPartial::class,
         PwaController::class,
+        PwaOfflineController::class,
+        PwaPushController::class,
         PwaManagerContract::class,
-        WordpressAdapter::class
+        WordpressAdapter::class,
     ];
 
     /**
@@ -28,11 +34,14 @@ class PwaServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        events()->listen('wp.booted', function () {
-            /** @var PwaManagerContract $pwa */
-            $pwa = $this->getContainer()->get(PwaManagerContract::class);
-            $pwa->setAdapter($this->getContainer()->get(WordpressAdapter::class))->boot();
-        });
+        events()->listen(
+            'wp.booted',
+            function () {
+                /** @var PwaManagerContract $pwa */
+                $pwa = $this->getContainer()->get(PwaManagerContract::class);
+                $pwa->setAdapter($this->getContainer()->get(WordpressAdapter::class))->boot();
+            }
+        );
     }
 
     /**
@@ -40,9 +49,12 @@ class PwaServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->getContainer()->share(PwaManagerContract::class, function () {
-            return new Pwa(config('pwa', []), $this->getContainer());
-        });
+        $this->getContainer()->share(
+            PwaManagerContract::class,
+            function () {
+                return new Pwa(config('pwa', []), $this->getContainer());
+            }
+        );
 
         $this->registerAdapters();
         $this->registerControllers();
@@ -56,9 +68,12 @@ class PwaServiceProvider extends ServiceProvider
      */
     public function registerAdapters(): void
     {
-        $this->getContainer()->share(WordpressAdapter::class, function () {
-            return new WordpressAdapter($this->getContainer()->get(PwaManagerContract::class));
-        });
+        $this->getContainer()->share(
+            WordpressAdapter::class,
+            function () {
+                return new WordpressAdapter($this->getContainer()->get(PwaManagerContract::class));
+            }
+        );
     }
 
     /**
@@ -68,12 +83,33 @@ class PwaServiceProvider extends ServiceProvider
      */
     public function registerControllers(): void
     {
-        $this->getContainer()->share(PwaController::class, function () {
-            return new PwaController(
-                $this->getContainer()->get(PwaManagerContract::class),
-                $this->getContainer()
-            );
-        });
+        $this->getContainer()->share(
+            PwaController::class,
+            function () {
+                return new PwaController(
+                    $this->getContainer()->get(PwaManagerContract::class),
+                    $this->getContainer()
+                );
+            }
+        );
+        $this->getContainer()->share(
+            PwaOfflineController::class,
+            function () {
+                return new PwaOfflineController(
+                    $this->getContainer()->get(PwaManagerContract::class),
+                    $this->getContainer()
+                );
+            }
+        );
+        $this->getContainer()->share(
+            PwaPushController::class,
+            function () {
+                return new PwaPushController(
+                    $this->getContainer()->get(PwaManagerContract::class),
+                    $this->getContainer()
+                );
+            }
+        );
     }
 
     /**
@@ -83,18 +119,23 @@ class PwaServiceProvider extends ServiceProvider
      */
     public function registerPartialDrivers(): void
     {
-        $this->getContainer()->add(CameraCapturePartial::class, function () {
-            return new CameraCapturePartial(
-                $this->getContainer()->get(PwaManagerContract::class),
-                $this->getContainer()->get(PartialManager::class)
-            );
-        });
-
-        $this->getContainer()->add(InstallPromotionPartial::class, function () {
-            return new InstallPromotionPartial(
-                $this->getContainer()->get(PwaManagerContract::class),
-                $this->getContainer()->get(PartialManager::class)
-            );
-        });
+        $this->getContainer()->add(
+            CameraCapturePartial::class,
+            function () {
+                return new CameraCapturePartial(
+                    $this->getContainer()->get(PwaManagerContract::class),
+                    $this->getContainer()->get(PartialContract::class)
+                );
+            }
+        );
+        $this->getContainer()->add(
+            InstallPromotionPartial::class,
+            function () {
+                return new InstallPromotionPartial(
+                    $this->getContainer()->get(PwaManagerContract::class),
+                    $this->getContainer()->get(PartialContract::class)
+                );
+            }
+        );
     }
 }
