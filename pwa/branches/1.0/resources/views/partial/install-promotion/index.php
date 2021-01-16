@@ -20,5 +20,5 @@
         </button>
     </div>
 
-    <a href="#PwaInstallPromotion-close"></a>
+    <a href="#PwaInstallPromotion-close" class="PwaInstallPromotion-close"></a>
 </div>

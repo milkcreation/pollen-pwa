@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Pollen\Pwa\Partial;
 
@@ -11,18 +13,20 @@ class CameraCapturePartial extends AbstractPwaPartial
      */
     public function render(): string
     {
-        $this->set([
-            'player' => [
-                'attrs' => [
-                    'class' => 'CameraCapture-player',
-                    //'controls',
-                    'autoplay',
-                    'muted',
-                    'poster' => Url::root($this->pwa()->resources()->rel('assets/src/img/photo-camera.png'))
+        $this->set(
+            [
+                'player' => [
+                    'attrs' => [
+                        'class'  => 'CameraCapture-player',
+                        //'controls',
+                        'autoplay',
+                        'muted',
+                        'poster' => Url::root($this->pwa()->resources()->rel('assets/src/img/photo-camera.png')),
+                    ],
+                    'tag'   => 'video',
                 ],
-                'tag' => 'video'
             ]
-        ]);
+        );
 
         return parent::render();
     }
