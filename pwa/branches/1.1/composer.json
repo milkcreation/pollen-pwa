@@ -1,0 +1,50 @@
+{
+  "name": "pollen-solutions/pwa",
+  "description": "Pwa component",
+  "homepage": "https://www.presstify.com/pollen-solutions/pwa/",
+  "keywords": [
+    "pollen-solutions",
+    "component",
+    "pwa"
+  ],
+  "time": "2020-01-15",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Jordy Manner",
+      "email": "jordy@presstify.com",
+      "role": "Developper"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://composer.presstify.com/pollen-solutions/"
+    }
+  ],
+  "require": {
+    "php": ">=7.3",
+    "composer/installers": "~1.0",
+    "minishlink/web-push": "^6.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Pollen\\Pwa\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Pollen\\Pwa\\Test\\": "tests"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  }
+}

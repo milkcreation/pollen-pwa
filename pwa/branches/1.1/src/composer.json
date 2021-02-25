@@ -1,0 +1,44 @@
+{
+  "name": "presstify-plugins/pwa",
+  "description": "Progressive Web App Manager.",
+  "homepage": "https://www.presstify.com/pollen-solutions/pwa/",
+  "keywords": [
+    "presstify",
+    "plugins",
+    "wordpress",
+    "pwa"
+  ],
+  "time": "2021-01-07",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Jordy Manner",
+      "email": "jordy@presstify.com",
+      "role": "Developper"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://composer.presstify.com/pollen-solutions/"
+    }
+  ],
+  "require": {
+    "ext-gmp": "*",
+    "ext-json": "*",
+    "composer/installers": "~1.0",
+    "minishlink/web-push": "^6.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Pollen\\Pwa\\": ""
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  }
+}
