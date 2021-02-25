@@ -1,17 +1,14 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace Pollen\Pwa;
+declare(strict_types=1);
+
+namespace Pollen\Pwa\Controller;
 
 use tiFy\Contracts\Http\Response;
-use tiFy\Contracts\View\Engine;
-use tiFy\Routing\BaseController;
 use tiFy\Support\Proxy\Url;
-use tiFy\Support\Proxy\View;
 
-class PwaController extends BaseController
+class PwaController extends AbstractController
 {
-    use PwaAwareTrait;
-
     /**
      * Manifest
      *
@@ -19,18 +16,18 @@ class PwaController extends BaseController
      */
     public function manifest(): array
     {
-        return [
+        return array_merge([
             "name"                 => get_bloginfo('name'),
             "short_name"           => get_bloginfo('name'),
             "icons"                => [
                 [
-                    "src"     => Url::root($this->pwa()->resources()->rel("assets/images/192.png"))->path(),
+                    "src"     => Url::root($this->pwa()->resources()->rel("assets/dist/img/192.png"))->path(),
                     "sizes"   => "192x192",
                     "type"    => "image/png",
                     "purpose" => "any maskable"
                 ],
                 [
-                    "src"     => Url::root($this->pwa()->resources()->rel("assets/images/512.png"))->path(),
+                    "src"     => Url::root($this->pwa()->resources()->rel("assets/dist/img/512.png"))->path(),
                     "sizes"   => "512x512",
                     "type"    => "image/png",
                     "purpose" => "any maskable"
@@ -47,29 +44,7 @@ class PwaController extends BaseController
                     "url"      => Url::root('/manifest.webmanifest')->render(),
                 ]
             ]
-        ];
-    }
-
-    /**
-     * Page Hors ligne
-     *
-     * @return Response
-     */
-    public function offline()
-    {
-        return $this->view('app/offline', [
-            'css' => $this->getOfflineCss()
-        ]);
-    }
-
-    /**
-     * Css Page Hors ligne
-     *
-     * @return string
-     */
-    protected function getOfflineCss(): string
-    {
-        return file_get_contents($this->pwa()->resources()->path('assets/css/app/offline.css'));
+        ], $this->pwa()->config('manifest', []));
     }
 
     /**
@@ -79,20 +54,8 @@ class PwaController extends BaseController
      */
     public function serviceWorker(): Response
     {
-        $content = file_get_contents($this->pwa()->resources()->path('assets/js/sw.js'));
+        $content = file_get_contents($this->pwa()->resources('assets/dist/js/service-worker.js'));
 
         return $this->response($content, 200, ['Content-Type' => 'application/javascript']);
-    }
-
-    /**
-     * Moteur d'affichage des gabarits d'affichage.
-     *
-     * @return Engine
-     */
-    public function viewEngine(): Engine
-    {
-        return View::getPlatesEngine([
-            'directory' => $this->pwa()->resources('views')
-        ]);
     }
 }

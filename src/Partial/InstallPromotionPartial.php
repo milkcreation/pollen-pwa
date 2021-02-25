@@ -1,40 +1,31 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Pollen\Pwa\Partial;
 
-use tiFy\Partial\PartialDriver;
-use Pollen\Pwa\PwaAwareTrait;
-
-class InstallPromotionPartial extends PartialDriver
+class InstallPromotionPartial extends AbstractPwaPartial
 {
-    use PwaAwareTrait;
-
     /**
      * @inheritDoc
      */
-    public function boot(): void
+    public function defaultParams(): array
     {
-        parent::boot();
-
-        $this->set(
-            'viewer.directory', $this->pwa()->resources()->path('views/partial/install-promotion')
+        return array_merge(
+            parent::defaultParams(),
+            [
+                /**
+                 * @var string fixed|fixed-bottom
+                 */
+                'style'   => 'fixed',
+                'title'   => __('Installation', 'pollen-pwa'),
+                'content' => __(
+                    'L\'installation n\'utilise quasiment pas de stockage et offre un moyen rapide et facile' .
+                    ' de revenir à cette application',
+                    'pollen-pwa'
+                ),
+            ]
         );
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function defaults(): array
-    {
-        return array_merge(parent::defaults(), [
-            /**
-             * @var string fixed|fixed-bottom
-             */
-            'style'   => 'fixed',
-            'title'   => __('Installation', 'tify'),
-            'content' => __('L\'installation n\'utilise quasiment pas de stockage et offre un moyen rapide et facile' .
-                ' de revenir à cette application', 'tify')
-        ]);
     }
 
     /**
@@ -42,13 +33,24 @@ class InstallPromotionPartial extends PartialDriver
      */
     public function render(): string
     {
-        $this->set([
-            'attrs.id'    => 'PwaInstallPromotion',
-            'attrs.class' => sprintf(
-                '%s hidden PwaInstallPromotion--' . $this->get('style'), $this->get('attrs.class', '')
-            )
-        ]);
+        $this->set(
+            [
+                'attrs.id'    => 'PwaInstallPromotion',
+                'attrs.class' => sprintf(
+                    '%s hidden PwaInstallPromotion--' . $this->get('style'),
+                    $this->get('attrs.class')
+                ),
+            ]
+        );
 
         return parent::render();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function viewDirectory(): string
+    {
+        return $this->pwa()->resources()->path('views/partial/install-promotion');
     }
 }

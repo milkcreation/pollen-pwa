@@ -2,20 +2,22 @@
 
 namespace Pollen\Pwa;
 
+use Pollen\Pwa\Contracts\PwaManagerContract;
+
 trait PwaAwareTrait
 {
     /**
      * Instance du gestionnaire de plugin.
-     * @var Pwa|null
+     * @var PwaManagerContract|null
      */
     protected $pwa;
 
     /**
      * Récupération de l'instance du gestionnaire de plugin.
      *
-     * @return Pwa|null
+     * @return PwaManagerContract|null
      */
-    public function pwa(): ?Pwa
+    public function pwa(): ?PwaManagerContract
     {
         return $this->pwa;
     }
@@ -23,11 +25,11 @@ trait PwaAwareTrait
     /**
      * Définition du gestionnaire de plugin.
      *
-     * @param Pwa $pwa
+     * @param PwaManagerContract $pwa
      *
      * @return static
      */
-    public function setPwa(Pwa $pwa): self
+    public function setPwaManager(PwaManagerContract $pwa): self
     {
         $this->pwa = $pwa;
 
