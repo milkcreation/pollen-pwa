@@ -1,29 +1,38 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
-use Exception;
+use RuntimeException;
 use Psr\Container\ContainerInterface as Container;
-use Pollen\Pwa\Contracts\Pwa as PwaContract;
+use Pollen\Pwa\Contracts\PwaAdapterContract;
+use Pollen\Pwa\Contracts\PwaManagerContract;
+use Pollen\Pwa\Controller\PwaController;
+use Pollen\Pwa\Controller\PwaOfflineController;
+use Pollen\Pwa\Controller\PwaPushController;
 use Pollen\Pwa\Partial\CameraCapturePartial;
 use Pollen\Pwa\Partial\InstallPromotionPartial;
+use tiFy\Contracts\Routing\RouteGroup;
 use tiFy\Routing\Strategy\AppStrategy;
+use tiFy\Routing\Strategy\JsonStrategy;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
 use tiFy\Support\Concerns\BootableTrait;
 use tiFy\Support\Concerns\ContainerAwareTrait;
-use tiFy\Support\Proxy\Partial;
-use tiFy\Support\Proxy\Url;
+use tiFy\Support\Concerns\PartialManagerAwareTrait;
 use tiFy\Support\Proxy\Router;
 use tiFy\Support\Proxy\Storage;
 use tiFy\Support\ParamsBag;
 
-class Pwa implements PwaContract
+class Pwa implements PwaManagerContract
 {
-    use BootableTrait, ContainerAwareTrait;
+    use BootableTrait;
+    use ContainerAwareTrait;
+    use PartialManagerAwareTrait;
 
     /**
      * Instance de l'extension de gestion d'optimisation de site.
-     * @var PwaContract|null
+     * @var PwaManagerContract|null
      */
     private static $instance;
 
@@ -40,11 +49,17 @@ class Pwa implements PwaContract
     private $resources;
 
     /**
+     * Instance de l'adapteur associé
+     * @var PwaAdapterContract|null
+     */
+    protected $adapter;
+
+    /**
      * Liste des services par défaut fournis par conteneur d'injection de dépendances.
      * @var array
      */
-    protected array $defaultProviders = [
-        'controller' => PwaController::class
+    protected $defaultProviders = [
+        'controller' => PwaController::class,
     ];
 
     /**
@@ -69,7 +84,7 @@ class Pwa implements PwaContract
     /**
      * @inheritDoc
      */
-    public static function instance(): EmbedContract
+    public static function instance(): PwaManagerContract
     {
         if (self::$instance instanceof self) {
             return self::$instance;
@@ -80,35 +95,49 @@ class Pwa implements PwaContract
     /**
      * @inheritDoc
      */
-    public function boot(): PwaContract
+    public function boot(): PwaManagerContract
     {
         if (!$this->isBooted()) {
+            events()->trigger('pwa.booting', [$this]);
+
             /** Routage */
-            Router::setControllerStack([
-                'pwa' => $this->getContainer()->get('pwa.controller')
-            ]);
+            // - Worker & Manifest
+            Router::get('/manifest.webmanifest', [PwaController::class, 'manifest'])->strategy('json');
+            Router::get('/sw.js', [PwaController::class, 'serviceWorker'])->strategy('app');
+            // - Offline Page
+            Router::get('/offline.html', [PwaOfflineController::class, 'index'])->strategy('app');
+            Router::get('/offline.css', [PwaOfflineController::class, 'css'])->strategy('app');
+            Router::get('/offline.js', [PwaOfflineController::class, 'js'])->strategy('app');
+            // - Push
+            // -- Test
+            Router::get('/push-test.html', [PwaPushController::class, 'testHtml'])->strategy('app');
+            Router::get('/push-test.css', [PwaPushController::class, 'testCss'])->strategy('app');
+            Router::get('/push-test.js', [PwaPushController::class, 'testJs'])->strategy('app');
+            Router::get('/push-test-service-worker.js', [PwaPushController::class, 'testServiceWorker'])->strategy('app');
+            Router::xhr('/push-test-subscription', [PwaPushController::class, 'testSubscriptionXhr']);
+            Router::xhr('/push-test-subscription', [PwaPushController::class, 'testSubscriptionXhr'], 'PUT');
+            Router::xhr('/push-test-subscription', [PwaPushController::class, 'testSubscriptionXhr'], 'DELETE');
+            Router::xhr('/push-test-send', [PwaPushController::class, 'testSendXhr']);
 
-            Router::get('/manifest.webmanifest', ['pwa', 'manifest'])->strategy('json');
-
-            Router::get('/offline.html', ['pwa', 'offline'])->setStrategy(new AppStrategy());
-
-            Router::get('/sw.js', ['pwa', 'serviceWorker'])->setStrategy(new AppStrategy());
+            /** /
+            Router::group(
+                '/pwa/api',
+                function (RouteGroup $router) {
+                    $router->get('/', [PwaApiController::class, 'index'])->strategy('json');
+                    $router->get('/subscriber', [PwaApiController::class, 'subscriber'])->strategy('json');
+                }
+            );
             /**/
 
             /** Partials */
-            Partial::register('pwa-camera-capture', (new CameraCapturePartial())->setPwa($this));
-            Partial::register('pwa-install-promotion', (new InstallPromotionPartial())->setPwa($this));
+            $this->partialManager()
+                ->register('pwa-camera-capture', CameraCapturePartial::class)
+                ->register('pwa-install-promotion', InstallPromotionPartial::class);
             /**/
 
-            add_action('wp_head', function () {
-                echo "<link rel=\"manifest\" href=\"" . Url::root('/manifest.webmanifest')->path() . "\">";
-            }, 1);
-
-            add_action('wp_footer', function () {
-                echo partial('pwa-install-promotion');
-            }, 1);
-
             $this->setBooted();
+
+            events()->trigger('pwa.booted', [$this]);
         }
 
         return $this;
@@ -135,19 +164,31 @@ class Pwa implements PwaContract
     /**
      * @inheritDoc
      */
-    public function provider(string $name)
-    {
-        return $this->config("providers.{$name}", $this->defaultProviders[$name] ?? null);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function resources(?string $path = null)
     {
         if (!isset($this->resources) || is_null($this->resources)) {
             $this->resources = Storage::local(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'resources');
         }
         return is_null($path) ? $this->resources : $this->resources->path($path);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setAdapter(PwaAdapterContract $adapter): PwaManagerContract
+    {
+        $this->adapter = $adapter;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setConfig(array $attrs): PwaManagerContract
+    {
+        $this->config($attrs);
+
+        return $this;
     }
 }

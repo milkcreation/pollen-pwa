@@ -1,4 +1,4 @@
-# Ressources utiles
+# Web Ressources
 
 ## Debug
 
@@ -15,6 +15,18 @@
 - [Tutos Pwa Officiels](https://web.dev/progressive-web-apps/)
 - [Tutos Complet](https://medium.com/@guillaumeandre/progressive-web-app-pwa-fichier-web-app-manifest-7292db378af5)
 
+## Manifest
+
+### Generate icons
+
+- [Logo PWA](https://fr.wikipedia.org/wiki/Fichier:PWA_logo.svg)
+- [Bonnes pratiques](https://web.dev/maskable-icon/)
+- [Maskable.app Editor](https://maskable.app/editor)
+
+## Service Worker
+
+https://www.digitalocean.com/community/tutorials/js-intro-progressive-web-apps
+
 ## Installable
 
 - [Offline Fallback Page](https://web.dev/offline-fallback-page/)
@@ -29,23 +41,27 @@
 
 - [Pattern d'install](https://web.dev/promote-install/)
 
-## Update
+## Updatable
 
 - [Nouvelle mise à jour dispo](https://medium.com/progressive-web-apps/pwa-create-a-new-update-available-notification-using-service-workers-18be9168d717)
 
-## Service Worker
+## Push Notifications 
 
-https://www.digitalocean.com/community/tutorials/js-intro-progressive-web-apps
+[WebPush PHP Library](https://github.com/web-push-libs/web-push-php)
 
-### Appareil photo
+[WebPush PHP Library Example](https://github.com/web-push-libs/web-push-php)
+
+[Avec bouton de fermeture](https://jason.codes/2019/03/pwa-install-prompt/)
+
+## Appareil photo
 
 - https://daviddalbusco.medium.com/take-photo-and-access-the-picture-library-in-your-pwa-without-plugins-876dc92989b
 - https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
 - [Capture & Zoom](https://developers.google.com/web/updates/2016/12/imagecapture)
 - [Camera Pan & Tilt & Zoom](https://web.dev/camera-pan-tilt-zoom/)
 
-## Génération des icônes
+### QR-Code Scanner
 
-- [Logo PWA](https://fr.wikipedia.org/wiki/Fichier:PWA_logo.svg)
-- [Bonnes pratiques](https://web.dev/maskable-icon/)
-- [Maskable.app Editor](https://maskable.app/editor)
+[PHP QrCode generator](https://github.com/chillerlan/php-qrcode)
+[pwa-qr-code-scanner](https://github.com/Minishlink/pwa-qr-code-scanner)
+[TEST - pwa-qr-code-scanner](https://minishlink.github.io/pwa-qr-code-scanner/)
