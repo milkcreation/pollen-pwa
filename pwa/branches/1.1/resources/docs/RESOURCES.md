@@ -13,6 +13,7 @@
 ## Tutoriels
 
 - [Tutos Pwa Officiels](https://web.dev/progressive-web-apps/)
+- [Training Officiels](https://developers.google.com/web/ilt/pwa)
 - [Tutos Complet](https://medium.com/@guillaumeandre/progressive-web-app-pwa-fichier-web-app-manifest-7292db378af5)
 
 ## Manifest

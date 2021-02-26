@@ -4,30 +4,45 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa\Adapters;
 
-use Pollen\Pwa\Contracts\PwaManagerContract;
-use tiFy\Support\Proxy\Url;
+use Pollen\Http\UrlHelper;
+use Pollen\Pwa\AbstractPwaAdapter;
+use Pollen\Pwa\PwaInterface;
 
 class WordpressAdapter extends AbstractPwaAdapter
 {
     /**
-     * @param PwaManagerContract $pwaManager
+     * @param PwaInterface $pwa
      */
-    public function __construct(PwaManagerContract $pwaManager)
+    public function __construct(PwaInterface $pwa)
     {
-        parent::__construct($pwaManager);
+        parent::__construct($pwa);
 
         add_action(
             'wp_head',
             function () {
-                echo "<link rel=\"manifest\" href=\"" . Url::root('/manifest.webmanifest')->path() . "\">";
+                $urlHelper = new UrlHelper();
+
+                echo "<link rel=\"manifest\" href=\"" . $urlHelper->getRelativePath('/manifest.webmanifest') . "\">";
             },
             1
         );
 
         add_action(
+            'wp_head',
+            function () {
+                $urlHelper = new UrlHelper();
+                $src = $urlHelper->getAbsoluteUrl(
+                    $this->pwa()->resources('/assets/dist/js/service-worker/sw-register.js')
+                );
+
+                echo "<script type=\"text/javascript\" src=\"" . $src . "\">";
+            }
+        );
+
+        add_action(
             'wp_footer',
             function () {
-                echo partial('pwa-install-promotion');
+                echo $this->pwa()->partialManager()->get('pwa-install-promotion');
             },
             1
         );

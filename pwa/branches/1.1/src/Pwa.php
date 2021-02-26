@@ -4,53 +4,41 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
-use RuntimeException;
-use Psr\Container\ContainerInterface as Container;
-use Pollen\Pwa\Contracts\PwaAdapterContract;
-use Pollen\Pwa\Contracts\PwaManagerContract;
+use Pollen\Http\UrlHelper;
+use Pollen\Http\UrlManipulator;
+use Pollen\Support\Concerns\BootableTrait;
+use Pollen\Support\Concerns\ConfigBagAwareTrait;
+use Pollen\Support\Proxy\ContainerProxy;
+use Pollen\Support\Proxy\EventDispatcherProxy;
+use Pollen\Support\Proxy\PartialManagerProxy;
+use Pollen\Support\Proxy\RouterProxy;
+use Pollen\Support\Filesystem;
 use Pollen\Pwa\Controller\PwaController;
 use Pollen\Pwa\Controller\PwaOfflineController;
 use Pollen\Pwa\Controller\PwaPushController;
 use Pollen\Pwa\Partial\CameraCapturePartial;
 use Pollen\Pwa\Partial\InstallPromotionPartial;
-use tiFy\Contracts\Routing\RouteGroup;
-use tiFy\Routing\Strategy\AppStrategy;
-use tiFy\Routing\Strategy\JsonStrategy;
-use tiFy\Contracts\Filesystem\LocalFilesystem;
-use tiFy\Support\Concerns\BootableTrait;
-use tiFy\Support\Concerns\ContainerAwareTrait;
-use tiFy\Support\Concerns\PartialManagerAwareTrait;
-use tiFy\Support\Proxy\Router;
-use tiFy\Support\Proxy\Storage;
-use tiFy\Support\ParamsBag;
+use Psr\Container\ContainerInterface as Container;
+use RuntimeException;
 
-class Pwa implements PwaManagerContract
+class Pwa implements PwaInterface
 {
     use BootableTrait;
-    use ContainerAwareTrait;
-    use PartialManagerAwareTrait;
+    use ConfigBagAwareTrait;
+    use ContainerProxy;
+    use EventDispatcherProxy;
+    use PartialManagerProxy;
+    use RouterProxy;
 
     /**
-     * Instance de l'extension de gestion d'optimisation de site.
-     * @var PwaManagerContract|null
+     * Instance principale.
+     * @var static|null
      */
     private static $instance;
 
     /**
-     * Instance du gestionnaire de configuration.
-     * @var ParamsBag
-     */
-    private $configBag;
-
-    /**
-     * Instance du gestionnaire des ressources
-     * @var LocalFilesystem|null
-     */
-    private $resources;
-
-    /**
      * Instance de l'adapteur associé
-     * @var PwaAdapterContract|null
+     * @var PwaAdapterInterface|null
      */
     protected $adapter;
 
@@ -61,6 +49,12 @@ class Pwa implements PwaManagerContract
     protected $defaultProviders = [
         'controller' => PwaController::class,
     ];
+
+    /**
+     * Chemin vers le répertoire des ressources.
+     * @var string|null
+     */
+    protected $resourcesBaseDir;
 
     /**
      * @param array $config
@@ -76,68 +70,89 @@ class Pwa implements PwaManagerContract
             $this->setContainer($container);
         }
 
+        if ($this->config('boot_enabled', true)) {
+            $this->boot();
+        }
+
         if (!self::$instance instanceof static) {
             self::$instance = $this;
         }
     }
 
     /**
-     * @inheritDoc
+     * Récupération de l'instance principale.
+     *
+     * @return static
      */
-    public static function instance(): PwaManagerContract
+    public static function getInstance(): PwaInterface
     {
         if (self::$instance instanceof self) {
             return self::$instance;
         }
-        throw new RuntimeException(sprintf('Unavailable %s instance', __CLASS__));
+        throw new RuntimeException(sprintf('Unavailable [%s] instance', __CLASS__));
     }
 
     /**
      * @inheritDoc
      */
-    public function boot(): PwaManagerContract
+    public function boot(): PwaInterface
     {
         if (!$this->isBooted()) {
-            events()->trigger('pwa.booting', [$this]);
+            $this->eventDispatcher()->trigger('pwa.booting', [$this]);
 
             /** Routage */
             // - Worker & Manifest
-            Router::get('/manifest.webmanifest', [PwaController::class, 'manifest'])->strategy('json');
-            Router::get('/sw.js', [PwaController::class, 'serviceWorker'])->strategy('app');
+            $wmController = $this->getContainer() ? PwaController::class : new PwaController($this);
+            $this->router()->get('/manifest.webmanifest', [$wmController, 'manifest']);
+            $this->router()->get('/sw.js', [$wmController, 'serviceWorker']);
             // - Offline Page
-            Router::get('/offline.html', [PwaOfflineController::class, 'index'])->strategy('app');
-            Router::get('/offline.css', [PwaOfflineController::class, 'css'])->strategy('app');
-            Router::get('/offline.js', [PwaOfflineController::class, 'js'])->strategy('app');
+            $offlineController = $this->getContainer() ? PwaOfflineController::class : new PwaOfflineController($this);
+            $this->router()->get('/offline.html', [$offlineController, 'index']);
+            $this->router()->get('/offline.css', [$offlineController, 'css']);
+            $this->router()->get('/offline.js', [$offlineController, 'js']);
             // - Push
             // -- Test
-            Router::get('/push-test.html', [PwaPushController::class, 'testHtml'])->strategy('app');
-            Router::get('/push-test.css', [PwaPushController::class, 'testCss'])->strategy('app');
-            Router::get('/push-test.js', [PwaPushController::class, 'testJs'])->strategy('app');
-            Router::get('/push-test-service-worker.js', [PwaPushController::class, 'testServiceWorker'])->strategy('app');
-            Router::xhr('/push-test-subscription', [PwaPushController::class, 'testSubscriptionXhr']);
-            Router::xhr('/push-test-subscription', [PwaPushController::class, 'testSubscriptionXhr'], 'PUT');
-            Router::xhr('/push-test-subscription', [PwaPushController::class, 'testSubscriptionXhr'], 'DELETE');
-            Router::xhr('/push-test-send', [PwaPushController::class, 'testSendXhr']);
+            $pushController = $this->getContainer() ? PwaPushController::class : new PwaPushController($this);
+            $this->router()->get('/push-test.html', [$pushController, 'testHtml']);
+            $this->router()->get('/push-test.css', [$pushController, 'testCss']);
+            $this->router()->get('/push-test.js', [$pushController, 'testJs']);
+            $this->router()->get('/push-test-service-worker.js', [$pushController, 'testServiceWorker']);
+            $this->router()->get('/push-test-subscription', [$pushController, 'testSubscriptionXhr']);
+            $this->router()->xhr('/push-test-subscription', [$pushController, 'testSubscriptionXhr']);
+            $this->router()->xhr('/push-test-subscription', [$pushController, 'testSubscriptionXhr'], 'PUT');
+            $this->router()->xhr(
+                '/push-test-subscription',
+                [$pushController, 'testSubscriptionXhr'],
+                'DELETE'
+            );
+            $this->router()->xhr('/push-test-send', [$pushController, 'testSendXhr']);
 
             /** /
-            Router::group(
-                '/pwa/api',
-                function (RouteGroup $router) {
-                    $router->get('/', [PwaApiController::class, 'index'])->strategy('json');
-                    $router->get('/subscriber', [PwaApiController::class, 'subscriber'])->strategy('json');
-                }
-            );
-            /**/
+             * Router::group(
+             * '/pwa/api',
+             * function (RouteGroup $router) {
+             * $router->get('/', [PwaApiController::class, 'index'])->strategy('json');
+             * $router->get('/subscriber', [PwaApiController::class, 'subscriber'])->strategy('json');
+             * }
+             * );
+             * /**/
 
             /** Partials */
             $this->partialManager()
-                ->register('pwa-camera-capture', CameraCapturePartial::class)
-                ->register('pwa-install-promotion', InstallPromotionPartial::class);
-            /**/
+                ->register(
+                    'pwa-camera-capture',
+                    $this->containerHas(CameraCapturePartial::class)
+                        ? CameraCapturePartial::class : new CameraCapturePartial($this, $this->partialManager())
+                )
+                ->register(
+                    'pwa-install-promotion',
+                    $this->containerHas(InstallPromotionPartial::class)
+                        ? InstallPromotionPartial::class : new InstallPromotionPartial($this, $this->partialManager())
+                );
 
             $this->setBooted();
 
-            events()->trigger('pwa.booted', [$this]);
+            $this->eventDispatcher()->trigger('pwa.booted', [$this]);
         }
 
         return $this;
@@ -146,36 +161,75 @@ class Pwa implements PwaManagerContract
     /**
      * @inheritDoc
      */
-    public function config($key = null, $default = null)
+    public function defaultConfig(): array
     {
-        if ($this->configBag === null) {
-            $this->configBag = new ParamsBag();
-        }
+        $urlHelper = new UrlHelper();
+        $startUrl = $urlHelper->getRelativePath('/');
+        $startUrl = (new UrlManipulator($startUrl))->with(
+            [
+                'utm_medium' => 'PWA',
+                'utm_source' => 'standalone',
+            ]
+        );
 
-        if (is_string($key)) {
-            return $this->configBag->get($key, $default);
-        } elseif (is_array($key)) {
-            return $this->configBag->set($key);
-        } else {
-            return $this->configBag;
-        }
+        return [
+            // @see https://developer.mozilla.org/en-US/docs/Web/Manifest
+            'manifest' => [
+                'name'                 => get_bloginfo('name'),
+                'short_name'           => get_bloginfo('name'),
+                'icons'                => [
+                    [
+                        'src'     => $urlHelper->getRelativePath($this->resources('/assets/dist/img/192.png')),
+                        'sizes'   => '192x192',
+                        'type'    => 'image/png',
+                        'purpose' => 'any maskable',
+                    ],
+                    [
+                        'src'     => $urlHelper->getRelativePath($this->resources('/assets/dist/img/512.png')),
+                        'sizes'   => '512x512',
+                        'type'    => 'image/png',
+                        'purpose' => 'any maskable',
+                    ],
+                ],
+                'scope'                => $urlHelper->getScope(),
+                'start_url'            => (string)$startUrl,
+                'display'              => 'standalone',
+                'background_color'     => '#5A0FC8',
+                'theme_color'          => '#FFFFFF',
+                'related_applications' => [
+                    [
+                        'platform' => 'webapp',
+                        'url'      => $urlHelper->getAbsoluteUrl('/manifest.webmanifest'),
+                    ],
+                ],
+            ],
+        ];
     }
 
     /**
      * @inheritDoc
      */
-    public function resources(?string $path = null)
+    public function resources(?string $path = null): string
     {
-        if (!isset($this->resources) || is_null($this->resources)) {
-            $this->resources = Storage::local(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'resources');
+        if ($this->resourcesBaseDir === null) {
+            $this->resourcesBaseDir = Filesystem::normalizePath(
+                realpath(
+                    dirname(__DIR__) . '/resources/'
+                )
+            );
+
+            if (!file_exists($this->resourcesBaseDir)) {
+                throw new RuntimeException('Recaptcha ressources directory unreachable');
+            }
         }
-        return is_null($path) ? $this->resources : $this->resources->path($path);
+
+        return is_null($path) ? $this->resourcesBaseDir : $this->resourcesBaseDir . Filesystem::normalizePath($path);
     }
 
     /**
      * @inheritDoc
      */
-    public function setAdapter(PwaAdapterContract $adapter): PwaManagerContract
+    public function setAdapter(PwaAdapterInterface $adapter): PwaInterface
     {
         $this->adapter = $adapter;
 
@@ -185,9 +239,9 @@ class Pwa implements PwaManagerContract
     /**
      * @inheritDoc
      */
-    public function setConfig(array $attrs): PwaManagerContract
+    public function setResourcesBaseDir(string $resourceBaseDir): PwaInterface
     {
-        $this->config($attrs);
+        $this->resourcesBaseDir = Filesystem::normalizePath($resourceBaseDir);
 
         return $this;
     }

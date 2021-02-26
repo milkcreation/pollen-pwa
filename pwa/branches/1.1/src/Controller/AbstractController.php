@@ -4,39 +4,31 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa\Controller;
 
-use Pollen\Pwa\Contracts\PwaManagerContract;
-use Pollen\Pwa\PwaAwareTrait;
+use Pollen\Routing\BaseController;
+use Pollen\Pwa\PwaInterface;
+use Pollen\Pwa\PwaProxyTrait;
 use Psr\Container\ContainerInterface as Container;
-use tiFy\Contracts\View\Engine;
-use tiFy\Routing\BaseController;
-use tiFy\Support\Proxy\View;
 
 abstract class AbstractController extends BaseController
 {
-    use PwaAwareTrait;
+    use PwaProxyTrait;
 
     /**
-     * @param PwaManagerContract $pwaManager
+     * @param PwaInterface $pwa
      * @param Container|null $container
      */
-    public function __construct(PwaManagerContract $pwaManager, ?Container $container = null)
+    public function __construct(PwaInterface $pwa, ?Container $container = null)
     {
-        $this->setPwaManager($pwaManager);
+        $this->setPwa($pwa);
 
         parent::__construct($container);
     }
 
     /**
-     * Moteur d'affichage des gabarits d'affichage.
-     *
-     * @return Engine
+     * @inheritDoc
      */
-    public function viewEngine(): Engine
+    public function viewEngineDirectory(): string
     {
-        return View::getPlatesEngine(
-            [
-                'directory' => $this->pwa()->resources('views'),
-            ]
-        );
+        return $this->pwa()->resources('/views');
     }
 }
