@@ -4,30 +4,28 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa\Controller;
 
-use tiFy\Contracts\Http\Response;
-use tiFy\Contracts\View\Engine;
-use tiFy\Support\Proxy\View;
+use Pollen\Http\ResponseInterface;
 
 class PwaOfflineController extends AbstractController
 {
     /**
      * Page Html
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    public function index(): Response
+    public function index(): ResponseInterface
     {
-        return $this->view('index', $this->all());
+        return $this->view('index', $this->params()->all());
     }
 
     /**
      * Css
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    public function css(): Response
+    public function css(): ResponseInterface
     {
-        $content = file_get_contents($this->pwa()->resources('assets/dist/css/offline/offline.css'));
+        $content = file_get_contents($this->pwa()->resources('/assets/dist/css/offline/offline.css'));
 
         return $this->response($content, 200, ['Content-Type' => 'text/css']);
     }
@@ -35,24 +33,20 @@ class PwaOfflineController extends AbstractController
     /**
      * Js
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    public function js(): Response
+    public function js(): ResponseInterface
     {
-        $content = file_get_contents($this->pwa()->resources('assets/dist/js/offline/offline.js'));
+        $content = file_get_contents($this->pwa()->resources('/assets/dist/js/offline/offline.js'));
 
         return $this->response($content, 200, ['Content-Type' => 'application/javascript']);
     }
 
     /**
-     * Moteur d'affichage des gabarits d'affichage.
-     *
-     * @return Engine
+     * @inheritDoc
      */
-    public function viewEngine(): Engine
+    public function viewEngineDirectory(): string
     {
-        return View::getPlatesEngine([
-            'directory' => $this->pwa()->resources('views/offline')
-        ]);
+        return $this->pwa()->resources('/views/offline');
     }
 }

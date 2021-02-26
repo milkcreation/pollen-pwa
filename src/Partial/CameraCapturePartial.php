@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa\Partial;
 
-use tiFy\Support\Proxy\Url;
+use Pollen\Http\UrlHelper;
 
 class CameraCapturePartial extends AbstractPwaPartial
 {
@@ -13,6 +13,8 @@ class CameraCapturePartial extends AbstractPwaPartial
      */
     public function render(): string
     {
+        $urlHelper = new UrlHelper();
+
         $this->set(
             [
                 'player' => [
@@ -21,7 +23,9 @@ class CameraCapturePartial extends AbstractPwaPartial
                         //'controls',
                         'autoplay',
                         'muted',
-                        'poster' => Url::root($this->pwa()->resources()->rel('assets/src/img/photo-camera.png')),
+                        'poster' => $urlHelper->getAbsoluteUrl(
+                            $this->pwa()->resources('/assets/src/img/photo-camera.png')
+                        ),
                     ],
                     'tag'   => 'video',
                 ],
@@ -36,6 +40,6 @@ class CameraCapturePartial extends AbstractPwaPartial
      */
     public function viewDirectory(): string
     {
-        return $this->pwa()->resources()->path('views/partial/camera-capture');
+        return $this->pwa()->resources('/views/partial/camera-capture');
     }
 }

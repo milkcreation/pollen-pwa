@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa\Partial;
 
-use Pollen\Pwa\Contracts\PwaManagerContract;
-use Pollen\Pwa\PwaAwareTrait;
-use tiFy\Partial\Contracts\PartialContract;
-use tiFy\Partial\PartialDriver;
+use Pollen\Pwa\PwaInterface;
+use Pollen\Pwa\PwaProxyTrait;
+use Pollen\Partial\PartialDriver;
+use Pollen\Partial\PartialManagerInterface;
 
 abstract class AbstractPwaPartial extends PartialDriver
 {
-    use PwaAwareTrait;
+    use PwaProxyTrait;
 
     /**
-     * @param PwaManagerContract $pwaManager
-     * @param PartialContract $partialManager
+     * @param PwaInterface $pwa
+     * @param PartialManagerInterface $partialManager
      */
-    public function __construct(PwaManagerContract $pwaManager, PartialContract $partialManager)
+    public function __construct(PwaInterface $pwa, PartialManagerInterface $partialManager)
     {
-        $this->setPwaManager($pwaManager);
+        $this->setPwa($pwa);
 
         parent::__construct($partialManager);
     }

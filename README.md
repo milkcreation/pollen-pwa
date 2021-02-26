@@ -12,30 +12,56 @@
 composer require pollen-solutions/pwa
 ```
 
+## Basic Usage
+
 ## Setup
 
-### Framework Declaration
-
-In config/app.php file.
+### Wordpress Setup (recommended)
 
 ```php
+use Pollen\Pwa\Pwa;
+use Pollen\Pwa\Adapters\WordpressAdapter;
+
+add_action('after_setup_theme', function () {
+    $pwa = new Pwa();
+    $pwaWpAdapter = new WordpressAdapter($pwa);
+    $pwa->setAdapter($pwaWpAdapter);
+}
+);
+```
+
+## Pollen Framework Setup
+
+### Declaration
+
+```php
+// config/app.php
+use Pollen\Pwa\PwaServiceProvider;
+
 return [
       //...
       'providers' => [
           //...
-          \Pollen\Pwa\PwaServiceProvider::class,
+          PwaServiceProvider::class,
           //...
-      ];
+      ]
       // ...
 ];
 ```
 
-### Standalone Declaration
+### Configuration
 
+```php
+// config/pwa.php
+// @see /vendor/pollen-solutions/pwa/resources/config/pwa.php.stub
+return [
 
-### NPM Usage
+];
+```
 
-In package.json file.
+### Package.json setup
+
+package.json
 
 ```json
 {
@@ -43,17 +69,4 @@ In package.json file.
     "pollen-pwa": "file:./vendor/pollen-solutions/pwa"
   }
 }
-```
-
-
-### Configuration
-
-```php
-// config/pwa.php
-// @see /vendor/pollen-solutions/pwa/resources/config/pwa.php
-return [
-      //...
-
-      // ...
-];
 ```

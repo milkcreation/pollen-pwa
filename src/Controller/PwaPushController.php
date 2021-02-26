@@ -4,26 +4,24 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa\Controller;
 
-use Throwable;
 use League\Route\Http\Exception\ForbiddenException;
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
-use tiFy\Contracts\Http\Response;
-use tiFy\Contracts\View\Engine;
-use tiFy\Support\Proxy\Request;
-use tiFy\Support\Proxy\Url;
-use tiFy\Support\Proxy\View;
+use Pollen\Http\UrlHelper;
+use Pollen\Http\ResponseInterface;
+use Pollen\Http\JsonResponseInterface;
+use Throwable;
 
 class PwaPushController extends AbstractController
 {
     /**
      * Racine de l'API
      *
-     * @return array
+     * @return JsonResponseInterface
      *
      * @throws ForbiddenException
      */
-    public function api(): array
+    public function api(): JsonResponseInterface
     {
         throw new ForbiddenException('Missing parameter');
     }
@@ -31,24 +29,24 @@ class PwaPushController extends AbstractController
     /**
      * Ajout d'un abonné
      *
-     * @return array
+     * @return JsonResponseInterface
      */
-    public function apiSubscribe(): array
+    public function apiSubscribe(): JsonResponseInterface
     {
-        return [
+        return $this->json([
             'success' => false,
-            'data'    => Request::all(),
-        ];
+            'data'    => $this->httpRequest()->request->all(),
+        ]);
     }
 
     /**
      * Test - Feuille de style CSS
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    public function testCss(): Response
+    public function testCss(): ResponseInterface
     {
-        $content = file_get_contents($this->pwa()->resources('assets/dist/css/push/push.test.styles.css'));
+        $content = file_get_contents($this->pwa()->resources('/assets/dist/css/push/push.test.styles.css'));
 
         return $this->response($content, 200, ['Content-Type' => 'text/css']);
     }
@@ -56,13 +54,12 @@ class PwaPushController extends AbstractController
     /**
      * Test - page HTML
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    public function testHtml(): Response
+    public function testHtml(): ResponseInterface
     {
-        $this->set(
-            'PushTest',
-            [
+        $this->params([
+            'PushTest' => [
                 'l10n'       => [
                     'button_default'  => __('Activer/Désactiver', 'pollen-pwa'),
                     'sending'         => __('Envoyer', 'pollen-pwa'),
@@ -74,18 +71,18 @@ class PwaPushController extends AbstractController
                 ],
                 'public_key' => 'BMBlr6YznhYMX3NgcWIDRxZXs0sh7tCv7_YCsWcww0ZCv9WGg-tRCXfMEHTiBPCksSqeve1twlbmVAZFv7GSuj0',
             ]
-        );
-        return $this->view('test', $this->all());
+        ]);
+        return $this->view('test', $this->params()->all());
     }
 
     /**
      * Test - Script JS
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    public function testJs(): Response
+    public function testJs(): ResponseInterface
     {
-        $content = file_get_contents($this->pwa()->resources('assets/dist/js/push/push.test.scripts.js'));
+        $content = file_get_contents($this->pwa()->resources('/assets/dist/js/push/push.test.scripts.js'));
 
         return $this->response($content, 200, ['Content-Type' => 'application/javascript']);
     }
@@ -93,30 +90,40 @@ class PwaPushController extends AbstractController
     /**
      * Test - Requête HTTP XHR de traitement de l'abonnement
      *
-     * @return array
+     * @return JsonResponseInterface
      *
      * @throws ForbiddenException
      */
-    public function testSubscriptionXhr(): array
+    public function testSubscriptionXhr(): JsonResponseInterface
     {
-        $subscription = Request::all();
+        if (!$this->httpRequest()->isMethod('POST')) {
+            try {
+                $subscription = json_decode($this->httpRequest()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-        if (!isset($subscription['endpoint'])) {
-            throw new ForbiddenException('Error: Push notifications subscription Invalid');
+                if (!isset($subscription['endpoint'])) {
+                    throw new ForbiddenException(
+                        'Error: Push notifications subscription Invalid >> Endpoint Subscription missing'
+                    );
+                }
+
+            } catch (Throwable $e) {
+                throw new ForbiddenException('Error: Push notifications subscription Invalid');
+            }
         }
-        switch (Request::getMethod()) {
+
+        switch ($this->httpRequest()->getMethod()) {
             case 'POST':
-                return [
+                return $this->json([
                     'Created: Push notifications subscription',
-                ];
+                ]);
             case 'PUT':
-                return [
+                return $this->json([
                     'Updated: Push notifications subscription',
-                ];
+                ]);
             case 'DELETE':
-                return [
+                return $this->json([
                     'Deleted: Push notifications subscription',
-                ];
+                ]);
             default:
                 throw new ForbiddenException('Error: Push notifications subscription Request method not handled');
         }
@@ -125,22 +132,26 @@ class PwaPushController extends AbstractController
     /**
      * Test - Requête HTTP XHR de traitement de l'envoi de message
      *
-     * @return array
+     * @return JsonResponseInterface
      *
      * @throws ForbiddenException
      */
-    public function testSendXhr(): array
+    public function testSendXhr(): JsonResponseInterface
     {
         try {
-            $subscription = $subscription = Subscription::create(Request::all());
+            $datas = json_decode($this->httpRequest()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+            $subscription = Subscription::create($datas);
         } catch (Throwable $e) {
             throw new ForbiddenException($e->getMessage());
         }
         try {
+            $urlHelper = new UrlHelper($this->httpRequest());
+
             $webPush = new WebPush(
                 [
                     'VAPID' => [
-                        'subject'    => Url::root('push-test.html')->render(),
+                        'subject'    => $urlHelper->getAbsoluteUrl('push-test.html'),
                         'publicKey'  => file_get_contents($this->pwa()->resources('/keys/push.test.public_key.txt')),
                         'privateKey' => file_get_contents($this->pwa()->resources('/keys/push.test.private_key.txt')),
                     ],
@@ -151,23 +162,23 @@ class PwaPushController extends AbstractController
         }
         $reports = [];
         try {
-            $reports[] = $webPush->sendOneNotification(
-                $subscription,
-                // @see https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification
-                json_encode(
-                    [
-                        'title'              => 'Pwa Push Test',
-                        'body'               => 'Hello World! 👋',
-                        'requireInteraction' => false,
-                        'vibrate'            => [300, 100, 400]
-                    ]
-                )
+            // @see https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification
+            $params = json_encode(
+                [
+                    'title'              => 'Pwa Push Test',
+                    'body'               => 'Hello World! 👋',
+                    'requireInteraction' => false,
+                    'vibrate'            => [300, 100, 400]
+                ],
+                JSON_THROW_ON_ERROR
             );
 
-            return [
+            $reports[] = $webPush->sendOneNotification($subscription, $params);
+
+            return $this->json([
                 'success' => true,
                 'data'    => $reports,
-            ];
+            ]);
         } catch (Throwable $e) {
             throw new ForbiddenException($e->getMessage());
         }
@@ -176,26 +187,20 @@ class PwaPushController extends AbstractController
     /**
      * Test - Service Worker
      *
-     * @return Response
+     * @return ResponseInterface
      */
-    public function testServiceWorker(): Response
+    public function testServiceWorker(): ResponseInterface
     {
-        $content = file_get_contents($this->pwa()->resources('assets/dist/js/push/push.test.service-worker.js'));
+        $content = file_get_contents($this->pwa()->resources('/assets/dist/js/push/push.test.service-worker.js'));
 
         return $this->response($content, 200, ['Content-Type' => 'application/javascript']);
     }
 
     /**
-     * Moteur d'affichage des gabarits d'affichage.
-     *
-     * @return Engine
+     * @inheritDoc
      */
-    public function viewEngine(): Engine
+    public function viewEngineDirectory(): string
     {
-        return View::getPlatesEngine(
-            [
-                'directory' => $this->pwa()->resources('views/push'),
-            ]
-        );
+        return $this->pwa()->resources('/views/push');
     }
 }

@@ -51,6 +51,6 @@ class InstallPromotionPartial extends AbstractPwaPartial
      */
     public function viewDirectory(): string
     {
-        return $this->pwa()->resources()->path('views/partial/install-promotion');
+        return $this->pwa()->resources('/views/partial/install-promotion');
     }
 }

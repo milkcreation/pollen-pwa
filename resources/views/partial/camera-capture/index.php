@@ -1,6 +1,6 @@
 <?php
 /**
- * @var tiFy\Contracts\Partial\PartialView $this
+ * @var Pollen\Partial\PartialViewTemplateInterface $this
  */
 ?>
 <div <?php echo $this->htmlAttrs(); ?>>
