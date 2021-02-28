@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
-interface PwaAdapterInterface extends PwaProxyTraitInterface
+interface PwaAdapterInterface extends PwaProxyInterface
 {
 }
