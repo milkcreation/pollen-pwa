@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
-interface PwaProxyTraitInterface
+interface PwaProxyInterface
 {
     /**
      * Récupération de l'instance du gestionnaire de Pwa.
@@ -18,7 +18,7 @@ interface PwaProxyTraitInterface
      *
      * @param PwaInterface $pwa
      *
-     * @return PwaProxyTrait
+     * @return PwaProxy|static
      */
-    public function setPwa(PwaInterface $pwa): PwaProxyTrait;
+    public function setPwa(PwaInterface $pwa): PwaProxy;
 }

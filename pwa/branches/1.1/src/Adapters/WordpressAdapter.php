@@ -42,7 +42,7 @@ class WordpressAdapter extends AbstractPwaAdapter
         add_action(
             'wp_footer',
             function () {
-                echo $this->pwa()->partialManager()->get('pwa-install-promotion');
+                echo $this->pwa()->partial('pwa-install-promotion');
             },
             1
         );

@@ -6,12 +6,12 @@ namespace Pollen\Pwa\Controller;
 
 use Pollen\Routing\BaseController;
 use Pollen\Pwa\PwaInterface;
-use Pollen\Pwa\PwaProxyTrait;
+use Pollen\Pwa\PwaProxy;
 use Psr\Container\ContainerInterface as Container;
 
 abstract class AbstractController extends BaseController
 {
-    use PwaProxyTrait;
+    use PwaProxy;
 
     /**
      * @param PwaInterface $pwa

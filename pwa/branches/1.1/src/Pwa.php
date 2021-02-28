@@ -9,8 +9,8 @@ use Pollen\Http\UrlManipulator;
 use Pollen\Support\Concerns\BootableTrait;
 use Pollen\Support\Concerns\ConfigBagAwareTrait;
 use Pollen\Support\Proxy\ContainerProxy;
-use Pollen\Support\Proxy\EventDispatcherProxy;
-use Pollen\Support\Proxy\PartialManagerProxy;
+use Pollen\Support\Proxy\EventProxy;
+use Pollen\Support\Proxy\PartialProxy;
 use Pollen\Support\Proxy\RouterProxy;
 use Pollen\Support\Filesystem;
 use Pollen\Pwa\Controller\PwaController;
@@ -26,8 +26,8 @@ class Pwa implements PwaInterface
     use BootableTrait;
     use ConfigBagAwareTrait;
     use ContainerProxy;
-    use EventDispatcherProxy;
-    use PartialManagerProxy;
+    use EventProxy;
+    use PartialProxy;
     use RouterProxy;
 
     /**
@@ -98,7 +98,7 @@ class Pwa implements PwaInterface
     public function boot(): PwaInterface
     {
         if (!$this->isBooted()) {
-            $this->eventDispatcher()->trigger('pwa.booting', [$this]);
+            $this->event()->trigger('pwa.booting', [$this]);
 
             /** Routage */
             // - Worker & Manifest
@@ -138,21 +138,21 @@ class Pwa implements PwaInterface
              * /**/
 
             /** Partials */
-            $this->partialManager()
+            $this->partial()
                 ->register(
                     'pwa-camera-capture',
                     $this->containerHas(CameraCapturePartial::class)
-                        ? CameraCapturePartial::class : new CameraCapturePartial($this, $this->partialManager())
+                        ? CameraCapturePartial::class : new CameraCapturePartial($this, $this->partial())
                 )
                 ->register(
                     'pwa-install-promotion',
                     $this->containerHas(InstallPromotionPartial::class)
-                        ? InstallPromotionPartial::class : new InstallPromotionPartial($this, $this->partialManager())
+                        ? InstallPromotionPartial::class : new InstallPromotionPartial($this, $this->partial())
                 );
 
             $this->setBooted();
 
-            $this->eventDispatcher()->trigger('pwa.booted', [$this]);
+            $this->event()->trigger('pwa.booted', [$this]);
         }
 
         return $this;

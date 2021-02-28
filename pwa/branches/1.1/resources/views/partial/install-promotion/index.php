@@ -1,6 +1,6 @@
 <?php
 /**
- * @var Pollen\Partial\PartialViewTemplateInterface $this
+ * @var Pollen\Partial\PartialViewLoaderInterface $this
  */
 ?>
 <div <?php echo $this->htmlAttrs(); ?>>

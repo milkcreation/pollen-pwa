@@ -7,7 +7,7 @@ namespace Pollen\Pwa;
 use Psr\Container\ContainerInterface as Container;
 use RuntimeException;
 
-trait PwaProxyTrait
+trait PwaProxy
 {
     /**
      * Instance du gestionnaire de Pwa.
@@ -46,7 +46,7 @@ trait PwaProxyTrait
      *
      * @return static
      */
-    public function setPwa(PwaInterface $pwa): PwaProxyTrait
+    public function setPwa(PwaInterface $pwa): PwaProxy
     {
         $this->pwa = $pwa;
 

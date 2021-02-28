@@ -6,7 +6,7 @@ namespace Pollen\Pwa;
 
 abstract class AbstractPwaAdapter implements PwaAdapterInterface
 {
-    use PwaProxyTrait;
+    use PwaProxy;
 
     /**
      * @param PwaInterface $pwa

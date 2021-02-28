@@ -7,16 +7,16 @@ namespace Pollen\Pwa;
 use Pollen\Support\Concerns\BootableTraitInterface;
 use Pollen\Support\Concerns\ConfigBagAwareTraitInterface;
 use Pollen\Support\Proxy\ContainerProxyInterface;
-use Pollen\Support\Proxy\EventDispatcherProxyInterface;
-use Pollen\Support\Proxy\PartialManagerProxyInterface;
+use Pollen\Support\Proxy\EventProxyInterface;
+use Pollen\Support\Proxy\PartialProxyInterface;
 use Pollen\Support\Proxy\RouterProxyInterface;
 
 interface PwaInterface extends
     BootableTraitInterface,
     ConfigBagAwareTraitInterface,
     ContainerProxyInterface,
-    EventDispatcherProxyInterface,
-    PartialManagerProxyInterface,
+    EventProxyInterface,
+    PartialProxyInterface,
     RouterProxyInterface
 {
     /**

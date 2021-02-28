@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Pollen\Pwa\Partial;
 
 use Pollen\Pwa\PwaInterface;
-use Pollen\Pwa\PwaProxyTrait;
+use Pollen\Pwa\PwaProxy;
 use Pollen\Partial\PartialDriver;
 use Pollen\Partial\PartialManagerInterface;
 
 abstract class AbstractPwaPartial extends PartialDriver
 {
-    use PwaProxyTrait;
+    use PwaProxy;
 
     /**
      * @param PwaInterface $pwa
