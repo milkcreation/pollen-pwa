@@ -5,7 +5,7 @@
 ?>
 <div <?php echo $this->htmlAttrs(); ?>>
     <div class="PwaCameraCapture-playerArea">
-        <?php echo partial('tag', $this->get('player')); ?>
+        <?php echo $this->partial('tag', $this->get('player')); ?>
     </div>
 
     <div class="PwaCameraCapture-handler">
