@@ -14,6 +14,7 @@
   padding:15px;
   transform:translateY(100%);
   //box-shadow: 0 0 8px 2px rgba(161,161,161,1);
+  z-index:9999;
 
   &.show {
     display: flex;
