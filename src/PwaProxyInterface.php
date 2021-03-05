@@ -18,7 +18,7 @@ interface PwaProxyInterface
      *
      * @param PwaInterface $pwa
      *
-     * @return PwaProxy|static
+     * @return static
      */
-    public function setPwa(PwaInterface $pwa): PwaProxy;
+    public function setPwa(PwaInterface $pwa): self;
 }
