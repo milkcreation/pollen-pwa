@@ -27,6 +27,20 @@ interface PwaInterface extends
     public function boot(): PwaInterface;
 
     /**
+     * Récupération des scripts de déclaration du manifest.
+     *
+     * @return string
+     */
+    public function getManifestScripts(): string;
+
+    /**
+     * Récupération des scripts de déclaration du service worker.
+     *
+     * @return string
+     */
+    public function getServiceWorkerScripts(): string;
+
+    /**
      * Chemin absolu vers une ressource (fichier|répertoire).
      *
      * @param string|null $path Chemin relatif vers la ressource.

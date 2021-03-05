@@ -31,6 +31,7 @@ window.addEventListener('beforeinstallprompt', e => {
   if (getVisited()) {
     return
   }
+
   if (navigator.getInstalledRelatedApps) {
     navigator.getInstalledRelatedApps().then(relatedApps => {
       if (relatedApps.length === 0) {
@@ -78,6 +79,7 @@ window.addEventListener('appinstalled', () => {
   Array.from(boxes).forEach(box => {
     box.classList.toggle('show', false)
   })
+  unsetVisited()
 })
 
 Array.from(closers).forEach(closer => {
@@ -91,9 +93,13 @@ Array.from(closers).forEach(closer => {
 })
 
 const getVisited = () => {
-  return localStorage.getItem('install-prompt') === 'true'
+  return localStorage.getItem('pwa-install-prompt') === 'true'
 }
 
 const setVisited = () => {
-  localStorage.setItem('install-prompt', 'true')
+  localStorage.setItem('pwa-install-prompt', 'true')
+}
+
+const unsetVisited = () => {
+  localStorage.setItem('pwa-install-prompt', 'false')
 }
