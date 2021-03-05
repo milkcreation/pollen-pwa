@@ -20,9 +20,7 @@ class WordpressAdapter extends AbstractPwaAdapter
         add_action(
             'wp_head',
             function () {
-                $urlHelper = new UrlHelper();
-
-                echo "<link rel=\"manifest\" href=\"" . $urlHelper->getRelativePath('/manifest.webmanifest') . "\">";
+                echo $this->pwa()->getManifestScripts();
             },
             1
         );
@@ -30,21 +28,8 @@ class WordpressAdapter extends AbstractPwaAdapter
         add_action(
             'wp_head',
             function () {
-                $urlHelper = new UrlHelper();
-                $src = $urlHelper->getAbsoluteUrl(
-                    $this->pwa()->resources('/assets/dist/js/service-worker/sw-register.js')
-                );
-
-                echo "<script type=\"text/javascript\" src=\"" . $src . "\">";
+                echo $this->pwa()->getServiceWorkerScripts();
             }
-        );
-
-        add_action(
-            'wp_footer',
-            function () {
-                echo $this->pwa()->partial('pwa-install-promotion');
-            },
-            1
         );
     }
 }

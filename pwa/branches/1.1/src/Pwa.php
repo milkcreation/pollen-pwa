@@ -209,6 +209,30 @@ class Pwa implements PwaInterface
     /**
      * @inheritDoc
      */
+    public function getManifestScripts(): string
+    {
+        $urlHelper = new UrlHelper();
+
+        return "<link rel=\"manifest\" href=\"" . $urlHelper->getRelativePath('/manifest.webmanifest') . "\">";
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getServiceWorkerScripts(): string
+    {
+        $urlHelper = new UrlHelper();
+        $src = $urlHelper->getAbsoluteUrl(
+            $this->resources('/assets/dist/js/service-worker/sw-register.js')
+        );
+
+        return "<script type=\"text/javascript\">/* <![CDATA[ */const pwaSW = {url:'" . $urlHelper->getAbsoluteUrl('/sw.js') . "'};/* ]]> */</script>" .
+            "<script type=\"text/javascript\" src=\"" . $src . "\">";
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function resources(?string $path = null): string
     {
         if ($this->resourcesBaseDir === null) {
