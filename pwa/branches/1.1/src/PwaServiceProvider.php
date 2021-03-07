@@ -6,7 +6,7 @@ namespace Pollen\Pwa;
 
 use Pollen\Container\BaseServiceProvider;
 use Pollen\Partial\PartialManagerInterface;
-use Pollen\Pwa\Adapters\WordpressAdapter;
+use Pollen\Pwa\Adapters\WpPwaAdapter;
 use Pollen\Pwa\Controller\PwaController;
 use Pollen\Pwa\Controller\PwaOfflineController;
 use Pollen\Pwa\Controller\PwaPushController;
@@ -26,7 +26,7 @@ class PwaServiceProvider extends BaseServiceProvider
         PwaInterface::class,
         PwaOfflineController::class,
         PwaPushController::class,
-        WordpressAdapter::class,
+        WpPwaAdapter::class,
     ];
 
     /**
@@ -54,9 +54,9 @@ class PwaServiceProvider extends BaseServiceProvider
     public function registerAdapters(): void
     {
         $this->getContainer()->share(
-            WordpressAdapter::class,
+            WpPwaAdapter::class,
             function () {
-                return new WordpressAdapter($this->getContainer()->get(PwaInterface::class));
+                return new WpPwaAdapter($this->getContainer()->get(PwaInterface::class));
             }
         );
     }

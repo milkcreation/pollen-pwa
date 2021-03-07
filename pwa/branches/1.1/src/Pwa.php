@@ -6,6 +6,7 @@ namespace Pollen\Pwa;
 
 use Pollen\Http\UrlHelper;
 use Pollen\Http\UrlManipulator;
+use Pollen\Pwa\Adapters\WpPwaAdapter;
 use Pollen\Support\Concerns\BootableTrait;
 use Pollen\Support\Concerns\ConfigBagAwareTrait;
 use Pollen\Support\Proxy\ContainerProxy;
@@ -149,6 +150,10 @@ class Pwa implements PwaInterface
                     $this->containerHas(InstallPromotionPartial::class)
                         ? InstallPromotionPartial::class : new InstallPromotionPartial($this, $this->partial())
                 );
+
+            if ($this->adapter === null && defined('WPINC')) {
+                $this->setAdapter(new WpPwaAdapter($this));
+            }
 
             $this->setBooted();
 

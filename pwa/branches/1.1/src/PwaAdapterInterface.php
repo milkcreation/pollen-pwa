@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
-interface PwaAdapterInterface extends PwaProxyInterface
+use Pollen\Support\Concerns\BootableTraitInterface;
+
+interface PwaAdapterInterface extends BootableTraitInterface, PwaProxyInterface
 {
+    /**
+     * Chargement.
+     *
+     * @return void
+     */
+    public function boot(): void;
 }

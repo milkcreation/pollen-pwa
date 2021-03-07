@@ -16,18 +16,14 @@ composer require pollen-solutions/pwa
 
 ## Setup
 
-### Wordpress Setup (recommended)
+### Wordpress Usage (recommended)
 
 ```php
 use Pollen\Pwa\Pwa;
-use Pollen\Pwa\Adapters\WordpressAdapter;
 
 add_action('after_setup_theme', function () {
     $pwa = new Pwa();
-    $pwaWpAdapter = new WordpressAdapter($pwa);
-    $pwa->setAdapter($pwaWpAdapter);
-}
-);
+});
 ```
 
 ## Pollen Framework Setup
