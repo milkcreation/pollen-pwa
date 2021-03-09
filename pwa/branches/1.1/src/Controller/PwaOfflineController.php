@@ -5,9 +5,26 @@ declare(strict_types=1);
 namespace Pollen\Pwa\Controller;
 
 use Pollen\Http\ResponseInterface;
+use Pollen\Routing\BaseViewController;
+use Pollen\Pwa\PwaInterface;
+use Pollen\Pwa\PwaProxy;
+use Psr\Container\ContainerInterface as Container;
 
-class PwaOfflineController extends AbstractController
+class PwaOfflineController extends BaseViewController
 {
+    use PwaProxy;
+
+    /**
+     * @param PwaInterface $pwa
+     * @param Container|null $container
+     */
+    public function __construct(PwaInterface $pwa, ?Container $container = null)
+    {
+        $this->setPwa($pwa);
+
+        parent::__construct($container);
+    }
+
     /**
      * Page Html
      *

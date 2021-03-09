@@ -17,7 +17,9 @@ class WpPwaAdapter extends AbstractPwaAdapter
             add_action(
                 'wp_head',
                 function () {
-                    echo $this->pwa()->getManifestScripts();
+                    if ($this->pwa()->config('wordpress.autoload', true) === true) {
+                        echo $this->pwa()->getManifestScripts();
+                    }
                 },
                 1
             );
@@ -25,7 +27,9 @@ class WpPwaAdapter extends AbstractPwaAdapter
             add_action(
                 'wp_head',
                 function () {
-                    echo $this->pwa()->getServiceWorkerScripts();
+                    if ($this->pwa()->config('wordpress.autoload', true) === true) {
+                        echo $this->pwa()->getServiceWorkerScripts();
+                    }
                 }
             );
 

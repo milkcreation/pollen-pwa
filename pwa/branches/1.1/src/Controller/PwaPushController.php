@@ -10,10 +10,27 @@ use Minishlink\WebPush\Subscription;
 use Pollen\Http\UrlHelper;
 use Pollen\Http\ResponseInterface;
 use Pollen\Http\JsonResponseInterface;
+use Pollen\Routing\BaseViewController;
+use Pollen\Pwa\PwaInterface;
+use Pollen\Pwa\PwaProxy;
+use Psr\Container\ContainerInterface as Container;
 use Throwable;
 
-class PwaPushController extends AbstractController
+class PwaPushController extends BaseViewController
 {
+    use PwaProxy;
+
+    /**
+     * @param PwaInterface $pwa
+     * @param Container|null $container
+     */
+    public function __construct(PwaInterface $pwa, ?Container $container = null)
+    {
+        $this->setPwa($pwa);
+
+        parent::__construct($container);
+    }
+
     /**
      * Racine de l'API
      *
