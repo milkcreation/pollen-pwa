@@ -4,11 +4,28 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa\Controller;
 
+use Pollen\Routing\BaseController;
 use Pollen\Http\JsonResponseInterface;
 use Pollen\Http\ResponseInterface;
+use Pollen\Pwa\PwaInterface;
+use Pollen\Pwa\PwaProxy;
+use Psr\Container\ContainerInterface as Container;
 
-class PwaController extends AbstractController
+class PwaController extends BaseController
 {
+    use PwaProxy;
+
+    /**
+     * @param PwaInterface $pwa
+     * @param Container|null $container
+     */
+    public function __construct(PwaInterface $pwa, ?Container $container = null)
+    {
+        $this->setPwa($pwa);
+
+        parent::__construct($container);
+    }
+
     /**
      * Manifest
      *
