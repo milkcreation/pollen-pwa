@@ -1,107 +1,166 @@
+/* global pwa */
 'use strict'
 
 // Incrementing OFFLINE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
-const OFFLINE_VERSION = 1;
-const CACHE_NAME = "offline";
-// Customize this with a different URL if needed.
-const OFFLINE_URL = "offline.html";
+const OFFLINE_VERSION = 1,
+    CACHE = JSON.parse(pwa['cache']),
+    CACHE_ENABLED = CACHE.enabled||false,
+    CACHE_KEY = CACHE.key||undefined,
+    CACHE_WHITELIST = CACHE.whitelist||[],
+    CACHE_BLACKLIST = CACHE.blacklist||[],
+    OFFLINE_URL = "offline.html"
 
-self.addEventListener("install", (event) => {
-    event.waitUntil(
-        (async() => {
-            const cache = await caches.open(CACHE_NAME);
+self.addEventListener("install", (e) => {
+  e.waitUntil(
+      (async () => {
+        const cache = await caches.open(CACHE_KEY)
+
         // Setting {cache: 'reload'} in the new request will ensure that the
         // response isn't fulfilled from the HTTP cache; i.e., it will be from
         // the network.
-            await cache.add(new Request(OFFLINE_URL, {cache: "reload"}));
-        })()
-    );
+        for (const url of CACHE_WHITELIST) {
+          await cache.add(new Request(url, {cache: 'reload'}))
+        }
+      })()
+  )
   // Force the waiting service worker to become the active service worker.
-  self.skipWaiting();
-});
+  self.skipWaiting()
+})
 
-self.addEventListener("activate", (event) => {
-  /*  Suppression du cache * /
-  const cacheWhitelist = [];
-
-  event.waitUntil(
-      caches.keys().then(function(keys) {
-          return Promise.all(keys.map(function(key) {
-              if (cacheWhitelist.indexOf(key) === -1) {
-                  return caches.delete(key);
-              }
-          }));
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+      (async () => {
+        const cache = await caches.open(CACHE_KEY)
+      })()
+  )
+  /*  Suppression du cache */
+  e.waitUntil(
+      caches.keys().then((keys) => {
+        return Promise.all(keys.map(function (key) {
+          if (CACHE_KEY !== key) {
+            return caches.delete(key)
+          }
+        }))
       })
-  );
-  /**/
+  )
 
-    event.waitUntil(
-        (async() => {
+  e.waitUntil(
+      (async () => {
         // Enable navigation preload if it's supported.
         // See https://developers.google.com/web/updates/2017/02/navigation-preload
-            if ("navigationPreload" in self.registration) {
-                await self.registration.navigationPreload.enable();
-            }
-        })()
-    );
+        if ("navigationPreload" in self.registration) {
+          await self.registration.navigationPreload.enable()
+        }
+      })()
+  )
 
   // Tell the active service worker to take control of the page immediately.
-  self.clients.claim();
-});
+  self.clients.claim()
+})
 
-self.addEventListener("fetch", (event) => {
+self.addEventListener("fetch", (e) => {
+  const matchUrl = (url) => {
+        return !e.request.url.match(url);
+      },
+      caching = async (request, response) => {
+        // Check if cache is enabled
+        if (CACHE_ENABLED === false) {
+          throw 'Caching is not enabled'
+        }
+
+        // Check current request url is in the cache blacklist.
+        if (!CACHE_BLACKLIST.every(matchUrl)) {
+          throw 'Current request is excluded from cache.'
+        }
+
+        // Check if current request url protocol isn't http or https
+        if (!request.url.match(/^(http|https):\/\//i)) {
+          throw 'Only http(s) request is allowed to be cached.'
+        }
+
+        // Check if current request url is from an external domain.
+        if (new URL(request.url).origin !== location.origin) {
+          throw 'Only local domain request is allowed to be cached.'
+        }
+
+        if (e.request.method !== 'GET') {
+          throw 'Only the GET request method is allowed to be cached.'
+        }
+
+        const cache = await caches.open(CACHE_KEY)
+
+        await cache.put(e.request, response.clone())
+      }
+
   // We only want to call event.respondWith() if this is a navigation request
   // for an HTML page.
-    if (event.request.mode === "navigate") {
-        event.respondWith(
-            (async() => {
-                try {
-                  // First, try to use the navigation preload response if it's supported.
-                    const preloadResponse = await event.preloadResponse;
-                    if (preloadResponse) {
-                        return preloadResponse;
-                    }
+  if (e.request.mode === "navigate") {
+    e.respondWith(
+        (async () => {
+          try {
+            const preloadResponse = await e.preloadResponse,
+                response = preloadResponse ? preloadResponse : await fetch(e.request)
 
-                  // Always try the network first.
-                    return await fetch(event.request);
-                } catch (error) {
-                  // catch is only triggered if an exception is thrown, which is likely
-                  // due to a network error.
-                  // If fetch() returns a valid HTTP response with a response code in
-                  // the 4xx or 5xx range, the catch() will NOT be called.
-                    console.log("Fetch failed; returning offline page instead.", error);
+            try {
+              await caching(e.request, response)
+            } catch (e) {
+              console.log(e)
+            }
 
-                    const cache = await caches.open(CACHE_NAME);
-                    return await cache.match(OFFLINE_URL);
-                }
-            })()
-        );
-    }
+            return response
+          } catch (error) {
+            const cache = await caches.open(CACHE_KEY)
 
-  // If our if() condition is false, then this fetch handler won't intercept the
-  // request. If there are any other fetch handlers registered, they will get a
-  // chance to call event.respondWith(). If no fetch handlers call
-  // event.respondWith(), the request will be handled by the browser as if there
-  // were no service worker involvement.
-});
+            return await cache.match(e.request) || await cache.match(OFFLINE_URL)
+          }
+        })()
+    )
+  } else {
+    // If our if() condition is false, then this fetch handler won't intercept the
+    // request. If there are any other fetch handlers registered, they will get a
+    // chance to call event.respondWith(). If no fetch handlers call
+    // event.respondWith(), the request will be handled by the browser as if there
+    // were no service worker involvement.
+    e.respondWith(
+        (async () => {
+          try {
+            const preloadResponse = await e.preloadResponse,
+                response = preloadResponse ? preloadResponse : await fetch(e.request)
 
-self.addEventListener('push', function (event) {
-    if (!(self.Notification && self.Notification.permission === 'granted')) {
-        return;
-    }
+            try {
+              await caching(e.request, response)
+            } catch (e) {
+              //console.log(e)
+            }
 
-    const sendNotification = body => {
-      // you could refresh a notification badge here with postMessage API
-        const title = "Web Push example";
+            return response
+          } catch (error) {
+            const cache = await caches.open(CACHE_KEY)
 
-        return self.registration.showNotification(title, {
-            body,
-        });
-    };
+            return await cache.match(e.request) || await cache.match(OFFLINE_URL)
+          }
+        })()
+    )
+  }
+})
 
-    if (event.data) {
-        const message = event.data.text();
-        event.waitUntil(sendNotification(message));
-    }
-});
+self.addEventListener('push', function (e) {
+  if (!(self.Notification && self.Notification.permission === 'granted')) {
+    return
+  }
+
+  const sendNotification = body => {
+    // you could refresh a notification badge here with postMessage API
+    const title = "Web Push example"
+
+    return self.registration.showNotification(title, {
+      body,
+    })
+  }
+
+  if (e.data) {
+    const message = e.data.text()
+    e.waitUntil(sendNotification(message))
+  }
+})

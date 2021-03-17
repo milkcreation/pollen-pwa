@@ -11,7 +11,7 @@ use Pollen\Pwa\Controller\PwaController;
 use Pollen\Pwa\Controller\PwaOfflineController;
 use Pollen\Pwa\Controller\PwaPushController;
 use Pollen\Pwa\Partial\CameraCapturePartial;
-use Pollen\Pwa\Partial\InstallPromotionPartial;
+use Pollen\Pwa\Partial\PwaInstallerPartial;
 
 class PwaServiceProvider extends BaseServiceProvider
 {
@@ -21,9 +21,10 @@ class PwaServiceProvider extends BaseServiceProvider
      */
     protected $provides = [
         CameraCapturePartial::class,
-        InstallPromotionPartial::class,
+        PwaInstallerPartial::class,
         PwaController::class,
         PwaInterface::class,
+        PwaManifestInterface::class,
         PwaOfflineController::class,
         PwaPushController::class,
         WpPwaAdapter::class,
@@ -44,6 +45,20 @@ class PwaServiceProvider extends BaseServiceProvider
         $this->registerAdapters();
         $this->registerControllers();
         $this->registerPartialDrivers();
+
+        $this->getContainer()->share(
+            PwaManifestInterface::class,
+            function () {
+                return new PwaManifest([], $this->getContainer()->get(PwaInterface::class));
+            }
+        );
+
+        $this->getContainer()->share(
+            PwaServiceWorkerInterface::class,
+            function () {
+                return new PwaServiceWorker($this->getContainer()->get(PwaInterface::class));
+            }
+        );
     }
 
     /**
@@ -114,9 +129,9 @@ class PwaServiceProvider extends BaseServiceProvider
             }
         );
         $this->getContainer()->add(
-            InstallPromotionPartial::class,
+            PwaInstallerPartial::class,
             function () {
-                return new InstallPromotionPartial(
+                return new PwaInstallerPartial(
                     $this->getContainer()->get(PwaInterface::class),
                     $this->getContainer()->get(PartialManagerInterface::class)
                 );

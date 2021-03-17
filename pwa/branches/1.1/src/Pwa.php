@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Pollen\Pwa;
 
 use Pollen\Http\UrlHelper;
-use Pollen\Http\UrlManipulator;
 use Pollen\Pwa\Adapters\WpPwaAdapter;
 use Pollen\Support\Concerns\BootableTrait;
 use Pollen\Support\Concerns\ConfigBagAwareTrait;
 use Pollen\Support\Proxy\ContainerProxy;
 use Pollen\Support\Proxy\EventProxy;
+use Pollen\Support\Proxy\HttpRequestProxy;
 use Pollen\Support\Proxy\PartialProxy;
 use Pollen\Support\Proxy\RouterProxy;
 use Pollen\Support\Filesystem;
@@ -18,9 +18,10 @@ use Pollen\Pwa\Controller\PwaController;
 use Pollen\Pwa\Controller\PwaOfflineController;
 use Pollen\Pwa\Controller\PwaPushController;
 use Pollen\Pwa\Partial\CameraCapturePartial;
-use Pollen\Pwa\Partial\InstallPromotionPartial;
+use Pollen\Pwa\Partial\PwaInstallerPartial;
 use Psr\Container\ContainerInterface as Container;
 use RuntimeException;
+use Throwable;
 
 class Pwa implements PwaInterface
 {
@@ -28,6 +29,7 @@ class Pwa implements PwaInterface
     use ConfigBagAwareTrait;
     use ContainerProxy;
     use EventProxy;
+    use HttpRequestProxy;
     use PartialProxy;
     use RouterProxy;
 
@@ -52,10 +54,22 @@ class Pwa implements PwaInterface
     ];
 
     /**
+     * Instance du manifest.
+     * @var PwaManifestInterface|null
+     */
+    protected $manifest;
+
+    /**
      * Chemin vers le répertoire des ressources.
      * @var string|null
      */
     protected $resourcesBaseDir;
+
+    /**
+     * Instance du service worker.
+     * @var PwaServiceWorkerInterface|null
+     */
+    protected $serviceWorker;
 
     /**
      * @param array $config
@@ -101,6 +115,19 @@ class Pwa implements PwaInterface
         if (!$this->isBooted()) {
             $this->event()->trigger('pwa.booting', [$this]);
 
+            /** Partials */
+            $this->partial()
+                ->register(
+                    'pwa-camera-capture',
+                    $this->containerHas(CameraCapturePartial::class)
+                        ? CameraCapturePartial::class : new CameraCapturePartial($this, $this->partial())
+                )
+                ->register(
+                    'pwa-installer',
+                    $this->containerHas(PwaInstallerPartial::class)
+                        ? PwaInstallerPartial::class : new PwaInstallerPartial($this, $this->partial())
+                );
+
             /** Routage */
             // - Worker & Manifest
             $wmController = $this->getContainer() ? PwaController::class : new PwaController($this);
@@ -138,19 +165,7 @@ class Pwa implements PwaInterface
              * );
              * /**/
 
-            /** Partials */
-            $this->partial()
-                ->register(
-                    'pwa-camera-capture',
-                    $this->containerHas(CameraCapturePartial::class)
-                        ? CameraCapturePartial::class : new CameraCapturePartial($this, $this->partial())
-                )
-                ->register(
-                    'pwa-install-promotion',
-                    $this->containerHas(InstallPromotionPartial::class)
-                        ? InstallPromotionPartial::class : new InstallPromotionPartial($this, $this->partial())
-                );
-
+            /** Initialisation de l'adapteur Wordpress */
             if ($this->adapter === null && defined('WPINC')) {
                 $this->setAdapter(new WpPwaAdapter($this));
             }
@@ -166,73 +181,62 @@ class Pwa implements PwaInterface
     /**
      * @inheritDoc
      */
-    public function defaultConfig(): array
+    public function getGlobalVars(bool $inline = true): array
     {
-        $urlHelper = new UrlHelper();
-        $startUrl = $urlHelper->getRelativePath('/');
-        $startUrl = (new UrlManipulator($startUrl))->with(
-            [
-                'utm_medium' => 'PWA',
-                'utm_source' => 'standalone',
-            ]
-        );
+        $vars = [];
 
-        return [
-            // @see https://developer.mozilla.org/en-US/docs/Web/Manifest
-            'manifest' => [
-                'name'                 => get_bloginfo('name'),
-                'short_name'           => get_bloginfo('name'),
-                'icons'                => [
-                    [
-                        'src'     => $urlHelper->getRelativePath($this->resources('/assets/dist/img/192.png')),
-                        'sizes'   => '192x192',
-                        'type'    => 'image/png',
-                        'purpose' => 'any maskable',
-                    ],
-                    [
-                        'src'     => $urlHelper->getRelativePath($this->resources('/assets/dist/img/512.png')),
-                        'sizes'   => '512x512',
-                        'type'    => 'image/png',
-                        'purpose' => 'any maskable',
-                    ],
-                ],
-                'scope'                => $urlHelper->getScope(),
-                'start_url'            => (string)$startUrl,
-                'display'              => 'standalone',
-                'background_color'     => '#5A0FC8',
-                'theme_color'          => '#FFFFFF',
-                'related_applications' => [
-                    [
-                        'platform' => 'webapp',
-                        'url'      => $urlHelper->getAbsoluteUrl('/manifest.webmanifest'),
-                    ],
-                ],
+        $urlHelper = new UrlHelper();
+        $vars['url'] = $urlHelper->getAbsoluteUrl('/sw.js');
+
+        $host = $this->httpRequest()->getHttpHost();
+        $base = ltrim(rtrim(str_replace('/', '-', $this->httpRequest()->getRewriteBase()), '-'), '-');
+        $vars['cache'] = [
+            'enabled'   => true,
+            'key'       => "{$host}-{$base}-pwa-1.0.0",
+            'whitelist' => [
+                $urlHelper->getRelativePath('offline.html'),
+                $urlHelper->getRelativePath('/?utm_medium=PWA&utm_source=standalone')
             ],
+            'blacklist' => ['/\/wp-admin/', '/\/wp-login/', '/preview=true/'],
         ];
+
+        $vars['offline_url'] = $urlHelper->getRelativePath('/offline.html');
+
+        $vars['navigation_preload'] = false;
+
+        return $vars;
     }
 
     /**
      * @inheritDoc
      */
-    public function getManifestScripts(): string
+    public function getGlobalVarsScripts(): string
     {
-        $urlHelper = new UrlHelper();
+        $vars = $this->getGlobalVars();
 
-        return "<link rel=\"manifest\" href=\"" . $urlHelper->getRelativePath('/manifest.webmanifest') . "\">";
+        try {
+            $vars = json_encode($vars, JSON_THROW_ON_ERROR);
+        } catch (Throwable $e) {
+            $vars = '{}';
+        }
+
+        $jsVars = "const PWA={$vars}";
+
+        return "<script type=\"text/javascript\">/* <![CDATA[ */{$jsVars}/* ]]> */</script>";
     }
 
     /**
      * @inheritDoc
      */
-    public function getServiceWorkerScripts(): string
+    public function manifest(): PwaManifestInterface
     {
-        $urlHelper = new UrlHelper();
-        $src = $urlHelper->getAbsoluteUrl(
-            $this->resources('/assets/dist/js/service-worker/sw-register.js')
-        );
+        if ($this->manifest === null) {
+            $this->manifest = $this->containerHas(PwaManifestInterface::class)
+                ? $this->containerGet(PwaManifestInterface::class) : new PwaManifest([], $this);
+            $this->manifest()->setVars($this->config('manifest', []));
+        }
 
-        return "<script type=\"text/javascript\">/* <![CDATA[ */const pwaSW = {url:'" . $urlHelper->getAbsoluteUrl('/sw.js') . "'};/* ]]> */</script>" .
-            "<script type=\"text/javascript\" src=\"" . $src . "\">";
+        return $this->manifest;
     }
 
     /**
@@ -253,6 +257,19 @@ class Pwa implements PwaInterface
         }
 
         return is_null($path) ? $this->resourcesBaseDir : $this->resourcesBaseDir . Filesystem::normalizePath($path);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function serviceWorker(): PwaServiceWorkerInterface
+    {
+        if ($this->serviceWorker === null) {
+            $this->serviceWorker = $this->containerHas(PwaServiceWorkerInterface::class)
+                ? $this->containerGet(PwaServiceWorkerInterface::class) : new PwaServiceWorker($this);
+        }
+
+        return $this->serviceWorker;
     }
 
     /**
