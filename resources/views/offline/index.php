@@ -13,7 +13,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title><?php _e('Application Hors-Ligne', 'pollen-pwa'); ?></title>
-    <link rel="stylesheet" href="offline.css" type="text/css" media="all">
+    <style type="text/css" media="all"><?php echo $this->get('css', ''); ?></style>
 </head>
 
 <body class="PwaOffline">
@@ -31,6 +31,6 @@
             <?php _e('Recharger', 'pollen-pwa'); ?>
         </button>
     </div>
-    <script type="text/javascript" src="offline.js"></script>
+    <script type="text/javascript">/* <![CDATA[ */{<?php echo $this->get('js', ''); ?>}/* ]]> */</script>
 </body>
 </html>

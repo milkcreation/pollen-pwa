@@ -14,11 +14,20 @@ class WpPwaAdapter extends AbstractPwaAdapter
     public function boot(): void
     {
         if (!$this->isBooted()) {
+            add_action('init', function () {
+                $this->pwa()->manifest()
+                    ->setDefault('name', get_bloginfo('name'))
+                    ->setDefault('short_name', get_bloginfo('name'));
+            });
+
+            /**  */
             add_action(
                 'wp_head',
                 function () {
                     if ($this->pwa()->config('wordpress.autoload', true) === true) {
-                        echo $this->pwa()->getManifestScripts();
+                        echo '<!-- PWA Manifest -->';
+                        echo $this->pwa()->manifest()->metaRegister();
+                        echo '<!-- / PWA Manifest -->';
                     }
                 },
                 1
@@ -28,11 +37,38 @@ class WpPwaAdapter extends AbstractPwaAdapter
                 'wp_head',
                 function () {
                     if ($this->pwa()->config('wordpress.autoload', true) === true) {
-                        echo $this->pwa()->getServiceWorkerScripts();
+                        echo '<!-- PWA MetaTags -->';
+                        echo $this->pwa()->manifest()->metaAppleTouchIcon();
+                        echo $this->pwa()->manifest()->metaThemeColor();
+                        echo '<!-- / PWA MetaTags -->';
+                    }
+                },
+                5
+            );
+
+            add_action(
+                'wp_head',
+                function () {
+                    if ($this->pwa()->config('wordpress.autoload', true) === true) {
+                        echo '<!-- PWA Global Vars -->';
+                        echo $this->pwa()->getGlobalVarsScripts();
+                        echo '<!-- / PWA Global Vars -->';
+                    }
+                },
+                25
+            );
+
+            add_action(
+                'wp_footer',
+                function () {
+                    if ($this->pwa()->config('wordpress.autoload', true) === true) {
+                        echo '<!-- PWA Service Worker Registration -->';
+                        echo $this->pwa()->serviceWorker()->getRegisterScripts();
+                        echo '<!-- / PWA Service Worker Registration -->';
                     }
                 }
             );
-
+            /**/
             $this->setBooted();
         }
     }

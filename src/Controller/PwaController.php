@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Pollen\Pwa\Controller;
 
 use Pollen\Routing\BaseController;
-use Pollen\Http\JsonResponseInterface;
 use Pollen\Http\ResponseInterface;
 use Pollen\Pwa\PwaInterface;
 use Pollen\Pwa\PwaProxy;
@@ -29,11 +28,11 @@ class PwaController extends BaseController
     /**
      * Manifest
      *
-     * @return JsonResponseInterface
+     * @return ResponseInterface
      */
-    public function manifest(): JsonResponseInterface
+    public function manifest(): ResponseInterface
     {
-        return $this->json($this->pwa()->config('manifest', []));
+        return $this->pwa()->manifest()->response();
     }
 
     /**
@@ -43,8 +42,6 @@ class PwaController extends BaseController
      */
     public function serviceWorker(): ResponseInterface
     {
-        $content = file_get_contents($this->pwa()->resources('/assets/dist/js/service-worker/sw.js'));
-
-        return $this->response($content, 200, ['Content-Type' => 'application/javascript']);
+        return $this->pwa()->serviceWorker()->response();
     }
 }
