@@ -44,12 +44,10 @@ trait PwaProxy
      *
      * @param PwaInterface $pwa
      *
-     * @return static
+     * @return void
      */
-    public function setPwa(PwaInterface $pwa): self
+    public function setPwa(PwaInterface $pwa): void
     {
         $this->pwa = $pwa;
-
-        return $this;
     }
 }
