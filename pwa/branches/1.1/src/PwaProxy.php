@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
-use Psr\Container\ContainerInterface as Container;
+use Pollen\Support\StaticProxy;
 use RuntimeException;
 
 trait PwaProxy
@@ -23,16 +23,14 @@ trait PwaProxy
     public function pwa(): PwaInterface
     {
         if ($this->pwa === null) {
-            $container = method_exists($this, 'getContainer') ? $this->getContainer() : null;
-
-            if ($container instanceof Container && $container->has(PwaInterface::class)) {
-                $this->pwa = $container->get(PwaInterface::class);
-            } else {
-                try {
-                    $this->pwa = Pwa::getInstance();
-                } catch(RuntimeException $e) {
-                    $this->pwa = new Pwa();
-                }
+            try {
+                $this->pwa = Pwa::getInstance();
+            } catch (RuntimeException $e) {
+                $this->pwa = StaticProxy::getProxyInstance(
+                    PwaInterface::class,
+                    Pwa::class,
+                    method_exists($this, 'getContainer') ? $this->getContainer() : null
+                );
             }
         }
 
