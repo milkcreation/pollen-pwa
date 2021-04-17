@@ -15,7 +15,7 @@ class PwaPushSend
      * @var array
      */
     protected $vapid = [
-        'subject'    => 'https://tigreblanc.fr',
+        'subject'    => 'https://presstify.com',
         'publicKey'  => 'BA3AaUmVuw2tXjIMs7z9Q53/lB4PLIwlUxOIiijBqSMfTGd+LGnpR/OYCd4MvYkAILRUiKmt4fPuXXj9lvVhQ7Q=',
         'privateKey' => 'MD70X0FTTN+Kn4wjOFB3hy46EslWK/3zUGEW5gMBroM=',
     ];
