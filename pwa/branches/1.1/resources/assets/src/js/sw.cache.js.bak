@@ -2,8 +2,8 @@
 
 const cacheName = 'shopPixvert';
 const dataCacheName = 'shopPixvertData';
-const startPage = 'https://dev.tigreblanc.fr/shop.pixvert.fr';
-const offlinePage = 'https://dev.tigreblanc.fr/shop.pixvert.fr';
+const startPage = 'http://localhost';
+const offlinePage = 'http://localhost';
 const filesToCache = [startPage, offlinePage];
 const neverCacheUrls = [/\/wp-admin/, /\/wp-login/, /preview=true/];
 

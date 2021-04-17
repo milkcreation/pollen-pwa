@@ -6,6 +6,7 @@ namespace Pollen\Pwa;
 
 use Pollen\Support\Concerns\BootableTraitInterface;
 use Pollen\Support\Concerns\ConfigBagAwareTraitInterface;
+use Pollen\Support\Concerns\ResourcesAwareTraitInterface;
 use Pollen\Support\Proxy\ContainerProxyInterface;
 use Pollen\Support\Proxy\EventProxyInterface;
 use Pollen\Support\Proxy\HttpRequestProxyInterface;
@@ -15,6 +16,7 @@ use Pollen\Support\Proxy\RouterProxyInterface;
 interface PwaInterface extends
     BootableTraitInterface,
     ConfigBagAwareTraitInterface,
+    ResourcesAwareTraitInterface,
     ContainerProxyInterface,
     HttpRequestProxyInterface,
     EventProxyInterface,
@@ -50,15 +52,6 @@ interface PwaInterface extends
     public function manifest(): PwaManifestInterface;
 
     /**
-     * Chemin absolu vers une ressource (fichier|répertoire).
-     *
-     * @param string|null $path Chemin relatif vers la ressource.
-     *
-     * @return string
-     */
-    public function resources(?string $path = null): string;
-
-    /**
      * Instance du Service Worker.
      *
      * @return PwaServiceWorkerInterface
@@ -73,13 +66,4 @@ interface PwaInterface extends
      * @return static
      */
     public function setAdapter(PwaAdapterInterface $adapter): PwaInterface;
-
-    /**
-     * Définition du chemin absolu vers le répertoire des ressources.
-     *
-     * @return static
-     * @var string $resourceBaseDir
-     *
-     */
-    public function setResourcesBaseDir(string $resourceBaseDir): PwaInterface;
 }
