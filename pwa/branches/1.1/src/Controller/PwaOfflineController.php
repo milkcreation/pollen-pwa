@@ -47,7 +47,7 @@ class PwaOfflineController extends BaseViewController
      */
     public function css(): ResponseInterface
     {
-        $content = file_get_contents($this->pwa()->resources('/assets/dist/css/offline/offline.css'));
+        $content = file_get_contents($this->pwa()->resources('/assets/dist/css/offline.css'));
 
         return $this->response($content, 200, ['Content-Type' => 'text/css']);
     }
@@ -59,7 +59,7 @@ class PwaOfflineController extends BaseViewController
      */
     public function js(): ResponseInterface
     {
-        $content = file_get_contents($this->pwa()->resources('/assets/dist/js/offline/offline.js'));
+        $content = file_get_contents($this->pwa()->resources('/assets/dist/js/offline.js'));
 
         return $this->response($content, 200, ['Content-Type' => 'application/javascript']);
     }

@@ -9,7 +9,6 @@ use Pollen\Partial\PartialManagerInterface;
 use Pollen\Pwa\Adapters\WpPwaAdapter;
 use Pollen\Pwa\Controller\PwaController;
 use Pollen\Pwa\Controller\PwaOfflineController;
-use Pollen\Pwa\Controller\PwaPushController;
 use Pollen\Pwa\Partial\CameraCapturePartial;
 use Pollen\Pwa\Partial\PwaInstallerPartial;
 
@@ -26,7 +25,6 @@ class PwaServiceProvider extends BaseServiceProvider
         PwaInterface::class,
         PwaManifestInterface::class,
         PwaOfflineController::class,
-        PwaPushController::class,
         WpPwaAdapter::class,
     ];
 
@@ -92,19 +90,11 @@ class PwaServiceProvider extends BaseServiceProvider
                 );
             }
         );
+
         $this->getContainer()->share(
             PwaOfflineController::class,
             function () {
                 return new PwaOfflineController(
-                    $this->getContainer()->get(PwaInterface::class),
-                    $this->getContainer()
-                );
-            }
-        );
-        $this->getContainer()->share(
-            PwaPushController::class,
-            function () {
-                return new PwaPushController(
                     $this->getContainer()->get(PwaInterface::class),
                     $this->getContainer()
                 );
@@ -128,6 +118,7 @@ class PwaServiceProvider extends BaseServiceProvider
                 );
             }
         );
+
         $this->getContainer()->add(
             PwaInstallerPartial::class,
             function () {

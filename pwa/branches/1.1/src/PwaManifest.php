@@ -294,7 +294,7 @@ class PwaManifest implements PwaManifestInterface
     public function metaAppleTouchIcon(): string
     {
         return ($icon = $this->getVars('apple_touch_icon'))
-            ? "<link rel=\"apple-touch-icon\" href=\"{$icon}\"/>" : '';
+            ? "<link rel=\"apple-touch-icon\" href=\"$icon\"/>" : '';
     }
 
     /**
@@ -310,7 +310,7 @@ class PwaManifest implements PwaManifestInterface
      */
     public function metaThemeColor(): string
     {
-        return ($color = $this->getVars('theme_color')) ? "<meta name=\"theme-color\" content=\"{$color}\"/>" : '';
+        return ($color = $this->getVars('theme_color')) ? "<meta name=\"theme-color\" content=\"$color\"/>" : '';
     }
 
     /**

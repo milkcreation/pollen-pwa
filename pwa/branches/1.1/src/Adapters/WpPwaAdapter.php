@@ -20,7 +20,6 @@ class WpPwaAdapter extends AbstractPwaAdapter
                     ->setDefault('short_name', get_bloginfo('name'));
             });
 
-            /**  */
             add_action(
                 'wp_head',
                 function () {
@@ -68,7 +67,7 @@ class WpPwaAdapter extends AbstractPwaAdapter
                     }
                 }
             );
-            /**/
+
             $this->setBooted();
         }
     }

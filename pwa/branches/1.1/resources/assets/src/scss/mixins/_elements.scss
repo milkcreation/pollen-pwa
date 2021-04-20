@@ -33,32 +33,32 @@
     }
 
     &.PwaButton--1 {
-      background-color: map-get($pwa-colors, "purple");
+      background-color: pwaColor(purple);
 
       &,
       &:active,
       &:focus,
       &:visited {
-        color: map-get($pwa-colors, "white");
+        color: pwaColor(white);
 
         &.PwaButton--alt {
-          color: map-get($pwa-colors, "purple");
+          color: pwaColor(purple);
         }
       }
 
       &:not([disabled]):hover {
-        color: map-get($pwa-colors, "purple");
-        background-color: map-get($pwa-colors, "white");
-        border-color: map-get($pwa-colors, "purple");
+        color: pwaColor(purple);
+        background-color: pwaColor(white);
+        border-color: pwaColor(purple);
       }
 
       &.PwaButton--alt {
-        background-color: map-get($pwa-colors, "white");
+        background-color: pwaColor(white);
 
         &:not([disabled]):hover {
-          color: map-get($pwa-colors, "white");
-          background-color: map-get($pwa-colors, "purple");
-          border-color: map-get($pwa-colors, "white");
+          color: pwaColor(white);
+          background-color: pwaColor(purple);
+          border-color: pwaColor(white);
         }
       }
 
