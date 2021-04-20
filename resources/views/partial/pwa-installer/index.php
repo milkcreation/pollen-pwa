@@ -22,8 +22,6 @@
         <?php echo $this->get('button'); ?>
     </button>
 
-
-
     <a href="#" class="<?php echo $this->get('classes.close'); ?>" data-pwa-installer="close">
         <?php echo $this->get('close'); ?>
     </a>

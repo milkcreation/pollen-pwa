@@ -145,22 +145,26 @@ self.addEventListener("fetch", (e) => {
   }
 })
 
-self.addEventListener('push', function (e) {
+self.addEventListener('push', function (event) {
   if (!(self.Notification && self.Notification.permission === 'granted')) {
     return
   }
 
-  const sendNotification = body => {
-    // you could refresh a notification badge here with postMessage API
-    const title = "Web Push example"
+  const sendNotification = (data) => {
+    /**
+     * @param {Object} jsonData
+     * @param {string} jsonData.body
+     */
+    let jsonData = JSON.parse(data),
+        title = jsonData.title
 
-    return self.registration.showNotification(title, {
-      body,
-    })
-  }
+    delete jsonData.title
 
-  if (e.data) {
-    const message = e.data.text()
-    e.waitUntil(sendNotification(message))
+    return self.registration.showNotification(title, jsonData)
+  };
+
+  if (event.data) {
+    const message = event.data.text()
+    event.waitUntil(sendNotification(message))
   }
 })

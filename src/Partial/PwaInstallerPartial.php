@@ -25,16 +25,13 @@ class PwaInstallerPartial extends AbstractPwaPartial
                  * @var string fixed|fixed-bottom
                  */
                 'style'   => 'fixed',
-                'title'   => __('Installer l\'application', 'pollen-pwa'),
-                'content' => __(
-                    'L\'installation n\'utilise quasiment aucun stockage et offre un moyen rapide et facile' .
+                'title'   => 'Installer l\'application',
+                'content' => 'L\'installation n\'utilise quasiment aucun stockage et offre un moyen rapide et facile' .
                     ' de revenir à cette application.',
-                    'pollen-pwa'
-                ),
-                'button'  => __('Installer', 'pollen-pwa'),
+                'button'  => 'Installer',
                 'close'   => '&#x2715;',
                 'timeout' => 5000,
-                'handler' => '&#171;',
+                'handler' => file_get_contents($this->pwa()->resources('assets/dist/img/install-ico.svg')),
             ]
         );
     }
@@ -53,7 +50,7 @@ class PwaInstallerPartial extends AbstractPwaPartial
         ];
 
         foreach ($defaultClasses as $key => $class) {
-            $this->set("classes.{$key}", sprintf($this->get("classes.{$key}", '%s'), $class));
+            $this->set("classes.$key", sprintf($this->get("classes.$key", '%s'), $class));
         }
 
         $this->set(

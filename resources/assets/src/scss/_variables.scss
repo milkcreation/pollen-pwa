@@ -1,3 +1,5 @@
+@use "sass:map";
+
 $pwa-colors: (
         "transparent": transparent,
         "black": #000000,
@@ -18,3 +20,11 @@ $pwa-colors: (
         "pink": #E9175D,
         "steel": #318299
 ) !default;
+
+@function pwaColor($alias) {
+  @if type-of($alias) != string {
+    $alias : "#{$alias}";
+  }
+
+  @return map.get($pwa-colors, #{$alias});
+}

@@ -12,10 +12,10 @@
   position: fixed;
   z-index: 9999;
   right:0;
-  top:50%;
+  top:40%;
   bottom:auto;
   left:auto;
-  transform:translate(100%, -50%);
+  transform:translate(100%, 0);
   flex-direction: column;
   align-items: flex-start;
   row-gap: 15px;
@@ -24,18 +24,18 @@
   transition: transform 400ms ease-in-out;
 
   &.show {
-    transform: translate(0, -50%);
+    transform: translate(0, 0);
   }
 }
 
 .PwaInstaller,
 .PwaInstaller-handler {
-  background-color: map-get($pwa-colors, "purple");
+  background-color: pwaColor(purple);
 }
 
 .PwaInstaller-title,
 .PwaInstaller-content {
-  color: map-get($pwa-colors, "white");
+  color: pwaColor(white);
   margin: 0;
   padding: 0;
 }
@@ -43,24 +43,35 @@
 .PwaInstaller-handler {
   position: absolute;
   display:none;
-  top:50%;
+  top:0;
   left:0;
-  transform: translate(-100%, -50%);
-  padding:5px;
+  transform: translate(-100%, 0);
+  width:32px;
+  height:32px;
+  z-index: 10000;
+
+  svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top:-9px;
+    margin-left:-9px;
+    width: 18px;
+    height: 18px;
+    fill: white;
+  }
 
   &,
   &:hover,
   &:active,
   &:focus,
   &:visited {
-    color: map-get($pwa-colors, "white");
+    color: pwaColor(white);
   }
 }
 
 .PwaInstaller.show {
-  .PwaInstaller-handler {
-    transform: translate(-100%, -50%) rotate(180Deg);
-  }
+
 }
 
 .PwaInstaller-title {
@@ -88,6 +99,6 @@
   &:active,
   &:focus,
   &:visited {
-    color: map-get($pwa-colors, "white");
+    color: pwaColor(white);
   }
 }

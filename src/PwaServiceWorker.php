@@ -39,9 +39,9 @@ class PwaServiceWorker implements PwaServiceWorkerInterface
     public function getRegisterScripts(): string
     {
         $urlHelper = new UrlHelper();
-        $src = $urlHelper->getAbsoluteUrl($this->pwa()->resources('/assets/dist/js/service-worker/sw-register.js'));
+        $src = $urlHelper->getAbsoluteUrl($this->pwa()->resources('/assets/dist/js/sw-register.js'));
 
-        return "<script type=\"text/javascript\" src=\"{$src}\"></script>";
+        return "<script type=\"text/javascript\" src=\"$src\"></script>";
     }
 
     /**
@@ -49,7 +49,7 @@ class PwaServiceWorker implements PwaServiceWorkerInterface
      */
     public function response(): ResponseInterface
     {
-        $content = file_get_contents($this->pwa()->resources('/assets/dist/js/service-worker/sw.js'));
+        $content = file_get_contents($this->pwa()->resources('/assets/dist/js/sw.js'));
 
         $vars = $this->pwa()->getGlobalVars();
 
@@ -59,7 +59,7 @@ class PwaServiceWorker implements PwaServiceWorkerInterface
             $vars = '{}';
         }
 
-        $jsVars = "const PWA={$vars}";
+        $jsVars = "const PWA=$vars";
 
         return new Response($jsVars . $content, 200, ['Content-Type' => 'application/javascript']);
     }

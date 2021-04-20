@@ -15,14 +15,11 @@ use Pollen\Support\Proxy\EventProxy;
 use Pollen\Support\Proxy\HttpRequestProxy;
 use Pollen\Support\Proxy\PartialProxy;
 use Pollen\Support\Proxy\RouterProxy;
-use Pollen\Support\Filesystem;
 use Pollen\Pwa\Controller\PwaController;
 use Pollen\Pwa\Controller\PwaOfflineController;
-use Pollen\Pwa\Controller\PwaPushController;
 use Pollen\Pwa\Partial\CameraCapturePartial;
 use Pollen\Pwa\Partial\PwaInstallerPartial;
 use Psr\Container\ContainerInterface as Container;
-use RuntimeException;
 use Throwable;
 
 class Pwa implements PwaInterface
@@ -135,32 +132,6 @@ class Pwa implements PwaInterface
             $this->router()->get('/offline.html', [$offlineController, 'index']);
             $this->router()->get('/offline.css', [$offlineController, 'css']);
             $this->router()->get('/offline.js', [$offlineController, 'js']);
-            // - Push
-            // -- Test
-            $pushController = $this->getContainer() ? PwaPushController::class : new PwaPushController($this);
-            $this->router()->get('/push-test.html', [$pushController, 'testHtml']);
-            $this->router()->get('/push-test.css', [$pushController, 'testCss']);
-            $this->router()->get('/push-test.js', [$pushController, 'testJs']);
-            $this->router()->get('/push-test-service-worker.js', [$pushController, 'testServiceWorker']);
-            $this->router()->get('/push-test-subscription', [$pushController, 'testSubscriptionXhr']);
-            $this->router()->xhr('/push-test-subscription', [$pushController, 'testSubscriptionXhr']);
-            $this->router()->xhr('/push-test-subscription', [$pushController, 'testSubscriptionXhr'], 'PUT');
-            $this->router()->xhr(
-                '/push-test-subscription',
-                [$pushController, 'testSubscriptionXhr'],
-                'DELETE'
-            );
-            $this->router()->xhr('/push-test-send', [$pushController, 'testSendXhr']);
-
-            /** /
-             * Router::group(
-             * '/pwa/api',
-             * function (RouteGroup $router) {
-             * $router->get('/', [PwaApiController::class, 'index'])->strategy('json');
-             * $router->get('/subscriber', [PwaApiController::class, 'subscriber'])->strategy('json');
-             * }
-             * );
-             * /**/
 
             /** Initialisation de l'adapteur Wordpress */
             if ($this->adapter === null && defined('WPINC')) {
@@ -189,7 +160,7 @@ class Pwa implements PwaInterface
         $base = ltrim(rtrim(str_replace('/', '-', $this->httpRequest()->getRewriteBase()), '-'), '-');
         $vars['cache'] = [
             'enabled'   => true,
-            'key'       => "{$host}-{$base}-pwa-1.0.0",
+            'key'       => "$host-$base-pwa-1.0.0",
             'whitelist' => [
                 $urlHelper->getRelativePath('offline.html'),
                 $urlHelper->getRelativePath('/?utm_medium=PWA&utm_source=standalone')
@@ -217,9 +188,9 @@ class Pwa implements PwaInterface
             $vars = '{}';
         }
 
-        $jsVars = "const PWA={$vars}";
+        $jsVars = "const PWA=$vars";
 
-        return "<script type=\"text/javascript\">/* <![CDATA[ */{$jsVars}/* ]]> */</script>";
+        return "<script type=\"text/javascript\">/* <![CDATA[ */$jsVars/* ]]> */</script>";
     }
 
     /**
