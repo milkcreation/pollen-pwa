@@ -32,6 +32,7 @@ class PwaInstallerPartial extends AbstractPwaPartial
                 'close'   => '&#x2715;',
                 'timeout' => 5000,
                 'handler' => file_get_contents($this->pwa()->resources('assets/dist/img/install-ico.svg')),
+                'observe' => true
             ]
         );
     }
@@ -64,9 +65,13 @@ class PwaInstallerPartial extends AbstractPwaPartial
             ]
         );
 
+        if ($this->get('observe')) {
+            $this->set('attrs.data-observe', 'pwa-installer');
+        }
+
         $timeout = $this->get('timeout');
         if (is_numeric($timeout) && $timeout >= 1000) {
-            $this->set('attrs.data-timeout', $timeout);
+            $this->set('attrs.data-options.timeout', $timeout);
         }
 
         return parent::render();
