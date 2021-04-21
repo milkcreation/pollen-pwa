@@ -62,46 +62,18 @@ interface PwaManifestInterface
     public function metaThemeColor(): string;
 
     /**
+     * Réinitialisation des variables.
+     *
+     * @return void
+     */
+    public function resetVars(): void;
+
+    /**
      * Réponse HTTP du fichier manifest (au format JSON)
      *
      * @return ResponseInterface
      */
     public function response(): ResponseInterface;
-
-    /**
-     * Définition de la liste des variables par défaut.
-     *
-     * @param string $key
-     * @param mixed $value
-     *
-     * @return static
-     */
-    public function setDefault(string $key, $value): PwaManifestInterface;
-
-    /**
-     * Contraint l'utilisation de certaines clés de variables dans le fichier manifest.
-     *
-     * @param array $keysOnly
-     *
-     * @return static
-     */
-    public function setKeysOnly(array $keysOnly): PwaManifestInterface;
-
-    /**
-     * Définition d'une liste de variables.
-     *
-     * @param array
-     *
-     * @return static
-     */
-    public function setVars(array $vars): PwaManifestInterface;
-
-    /**
-     * Récupération de la liste des variables sous forme d'un tableau.
-     *
-     * @return array
-     */
-    public function toArray(): array;
 
     /**
      * @param string $apple_touch_icon
@@ -123,6 +95,16 @@ interface PwaManifestInterface
      * @return PwaManifestInterface
      */
     public function setDescription(string $description): PwaManifestInterface;
+
+    /**
+     * Définition d'une variable par défaut.
+     *
+     * @param string $key
+     * @param mixed $value
+     *
+     * @return static
+     */
+    public function setDefault(string $key, $value): PwaManifestInterface;
 
     /**
      * @param string $dir
@@ -207,4 +189,20 @@ interface PwaManifestInterface
      * @return PwaManifestInterface
      */
     public function setThemeColor(string $theme_color): PwaManifestInterface;
+
+    /**
+     * Définition d'une liste de variables.
+     *
+     * @param array
+     *
+     * @return static
+     */
+    public function setVars(array $vars): PwaManifestInterface;
+
+    /**
+     * Récupération de la liste des variables sous forme d'un tableau.
+     *
+     * @return array
+     */
+    public function toArray(): array;
 }

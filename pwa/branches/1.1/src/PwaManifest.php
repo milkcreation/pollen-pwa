@@ -18,15 +18,16 @@ class PwaManifest implements PwaManifestInterface
     use PwaProxy;
 
     /**
-     * @var array
-     */
-    private $vars;
-
-    /**
      * Liste des variables par défaut.
      * @var array|null
      */
     private $defaults;
+
+    /**
+     * Liste des variables déclarés.
+     * @var array
+     */
+    private $vars;
 
     /**
      * Listes des clés de qualification des variables.
@@ -46,14 +47,8 @@ class PwaManifest implements PwaManifestInterface
         'scope',
         'short_name',
         'start_url',
-        'theme_color',
+        'theme_color'
     ];
-
-    /**
-     * Contraint l'utilisation de certaines clés de variable dans le fichier.
-     * @var array
-     */
-    private $keyOnly = [];
 
     /**
      * Icône IOS Safari.
@@ -104,14 +99,14 @@ class PwaManifest implements PwaManifestInterface
     protected $name;
 
     /**
-     * Orientation par défaut pour tout le premier niveau d'applications we
+     * Orientation par défaut pour tout le premier niveau d'applications
      * @var string
      *     any|natural|landscape|landscape-primary|landscape-secondary|portrait|portrait-primary|portrait-secondary
      */
     protected $orientation;
 
     /**
-     * Valeur boléenne qui indique à l'agent utilisateur si une application liée doit être préférée à l'application web.
+     * Valeur booléenne qui indique à l'agent utilisateur si une application liée doit être préférée à l'application web.
      * @var bool
      */
     protected $prefer_related_applications;
@@ -146,6 +141,12 @@ class PwaManifest implements PwaManifestInterface
      * @var string
      */
     protected $theme_color;
+
+    /**
+     * Activation de la contrainte des clés de variables de qualification.
+     * @var bool
+     */
+    protected $isVarKeysConstraint = true;
 
     /**
      * @param array $vars
@@ -259,18 +260,16 @@ class PwaManifest implements PwaManifestInterface
      */
     public function getVars(?string $key = null)
     {
-        if ($this->vars === null) {
-            $this->vars = $this->defaults();
+        $this->vars = $this->defaults();
 
-            foreach ($this->varKeys as $varKey) {
-                if (isset($this->{$varKey})) {
-                    $this->vars[$varKey] = $this->{$varKey};
-                }
+        foreach ($this->varKeys as $varKey) {
+            if (isset($this->{$varKey})) {
+                $this->vars[$varKey] = $this->{$varKey};
             }
         }
 
         if ($key === null) {
-            return array_intersect_key($this->vars, array_flip($this->keyOnly ?: $this->varKeys));
+            return $this->vars;
         }
 
         return $this->vars[$key] ?? null;
@@ -293,8 +292,7 @@ class PwaManifest implements PwaManifestInterface
      */
     public function metaAppleTouchIcon(): string
     {
-        return ($icon = $this->getVars('apple_touch_icon'))
-            ? "<link rel=\"apple-touch-icon\" href=\"$icon\"/>" : '';
+        return ($icon = $this->getVars('apple_touch_icon')) ? "<link rel=\"apple-touch-icon\" href=\"$icon\"/>" : '';
     }
 
     /**
@@ -314,9 +312,7 @@ class PwaManifest implements PwaManifestInterface
     }
 
     /**
-     * Réinitialisation des variables.
-     *
-     * @return void
+     * @inheritDoc
      */
     public function resetVars(): void
     {
@@ -341,40 +337,6 @@ class PwaManifest implements PwaManifestInterface
         $this->defaults[$key] = $value;
 
         return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setKeysOnly(array $keysOnly): PwaManifestInterface
-    {
-        $this->resetVars();
-
-        $this->keyOnly = array_intersect($keysOnly, $this->varKeys);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setVars(array $vars): PwaManifestInterface
-    {
-        foreach ($vars as $k => $v) {
-            $method = 'set' . implode('', array_map('ucfirst', explode('_', $k)));
-            if (method_exists($this, $method)) {
-                $this->$method($v);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function toArray(): array
-    {
-        return $this->getVars();
     }
 
     /**
@@ -555,5 +517,33 @@ class PwaManifest implements PwaManifestInterface
         $this->theme_color = $theme_color;
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setVars(array $vars): PwaManifestInterface
+    {
+        foreach ($vars as $k => $v) {
+            $method = 'set' . implode('', array_map('ucfirst', explode('_', $k)));
+            if (method_exists($this, $method)) {
+                $this->$method($v);
+            } else {
+                $this->$k = $v;
+            }
+
+            if (!in_array($k, $this->varKeys, true)) {
+                $this->varKeys[] = $k;
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toArray(): array
+    {
+        return $this->getVars();
     }
 }

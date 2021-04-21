@@ -42,17 +42,11 @@ https://www.digitalocean.com/community/tutorials/js-intro-progressive-web-apps
 
 - [Pattern d'install](https://web.dev/promote-install/)
 
+- [Avec bouton de fermeture](https://jason.codes/2019/03/pwa-install-prompt/)
+
 ## Updatable
 
 - [Nouvelle mise à jour dispo](https://medium.com/progressive-web-apps/pwa-create-a-new-update-available-notification-using-service-workers-18be9168d717)
-
-## Push Notifications 
-
-[WebPush PHP Library](https://github.com/web-push-libs/web-push-php)
-
-[WebPush PHP Library Example](https://github.com/web-push-libs/web-push-php)
-
-[Avec bouton de fermeture](https://jason.codes/2019/03/pwa-install-prompt/)
 
 ## Appareil photo
 
