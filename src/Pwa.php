@@ -79,6 +79,8 @@ class Pwa implements PwaInterface
             $this->setContainer($container);
         }
 
+        $this->setResourcesBaseDir(dirname(__DIR__) . '/resources');
+
         if ($this->config('boot_enabled', true)) {
             $this->boot();
         }
