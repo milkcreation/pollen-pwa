@@ -14,6 +14,12 @@ class PwaServiceWorker implements PwaServiceWorkerInterface
     use PwaProxy;
 
     /**
+     * Liste des scripts ajoutés au Service Worker.
+     * @var array
+     */
+    protected $appendScripts = [];
+
+    /**
      * @var string
      */
     protected $serviceWorkerPath;
@@ -36,6 +42,16 @@ class PwaServiceWorker implements PwaServiceWorkerInterface
     /**
      * @inheritDoc
      */
+    public function appendScripts(string $scripts): PwaServiceWorkerInterface
+    {
+        $this->appendScripts[] = $scripts;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getRegisterScripts(): string
     {
         $urlHelper = new UrlHelper();
@@ -49,8 +65,6 @@ class PwaServiceWorker implements PwaServiceWorkerInterface
      */
     public function response(): ResponseInterface
     {
-        $content = file_get_contents($this->pwa()->resources('/assets/dist/js/sw.js'));
-
         $vars = $this->pwa()->getGlobalVars();
 
         try {
@@ -58,9 +72,12 @@ class PwaServiceWorker implements PwaServiceWorkerInterface
         } catch (Throwable $e) {
             $vars = '{}';
         }
-
         $jsVars = "const PWA=$vars";
 
-        return new Response($jsVars . $content, 200, ['Content-Type' => 'application/javascript']);
+        $swScripts = file_get_contents($this->pwa()->resources('/assets/dist/js/sw.js'));
+
+        return new Response(
+            $jsVars . $swScripts . implode(PHP_EOL, $this->appendScripts), 200, ['Content-Type' => 'application/javascript']
+        );
     }
 }

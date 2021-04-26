@@ -9,7 +9,7 @@ interface PwaProxyInterface
     /**
      * Récupération de l'instance du gestionnaire de Pwa.
      *
-     * @return PwaInterface|null
+     * @return PwaInterface
      */
     public function pwa(): PwaInterface;
 

@@ -68,7 +68,7 @@ self.addEventListener("fetch", (e) => {
         }
 
         // Check current request url is in the cache blacklist.
-        if (!CACHE_BLACKLIST.every(matchUrl)) {
+        if (CACHE_BLACKLIST.every(matchUrl)) {
           throw 'Current request is excluded from cache.'
         }
 
@@ -143,26 +143,3 @@ self.addEventListener("fetch", (e) => {
   }
 })
 
-self.addEventListener('push', function (event) {
-  if (!(self.Notification && self.Notification.permission === 'granted')) {
-    return
-  }
-
-  const sendNotification = (data) => {
-    /**
-     * @param {Object} jsonData
-     * @param {string} jsonData.body
-     */
-    let jsonData = JSON.parse(data),
-        title = jsonData.title
-
-    delete jsonData.title
-
-    return self.registration.showNotification(title, jsonData)
-  };
-
-  if (event.data) {
-    const message = event.data.text()
-    event.waitUntil(sendNotification(message))
-  }
-})
