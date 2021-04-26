@@ -165,7 +165,7 @@ class Pwa implements PwaInterface
             'key'       => "$host-$base-pwa-1.0.0",
             'whitelist' => [
                 $urlHelper->getRelativePath('offline.html'),
-                $urlHelper->getRelativePath('/?utm_medium=PWA&utm_source=standalone')
+                $urlHelper->getRelativePath('/?utm_medium=PWA&utm_source=standalone'),
             ],
             'blacklist' => ['/\/wp-admin/', '/\/wp-login/', '/preview=true/'],
         ];
@@ -173,6 +173,11 @@ class Pwa implements PwaInterface
         $vars['offline_url'] = $urlHelper->getRelativePath('/offline.html');
 
         $vars['navigation_preload'] = false;
+
+        $vars['app'] = [
+            'url'   => $urlHelper->getAbsoluteUrl(),
+            'scope' => $urlHelper->getRelativePath(''),
+        ];
 
         return $vars;
     }

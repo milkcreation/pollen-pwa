@@ -7,6 +7,9 @@ namespace Pollen\Pwa;
 use Pollen\Support\StaticProxy;
 use RuntimeException;
 
+/**
+ * @see PwaProxyInterface
+ */
 trait PwaProxy
 {
     /**
@@ -38,7 +41,7 @@ trait PwaProxy
     }
 
     /**
-     * Définition du gestionnaire de pwa.
+     * Définition du gestionnaire de Pwa.
      *
      * @param PwaInterface $pwa
      *

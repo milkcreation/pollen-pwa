@@ -9,11 +9,13 @@ use Pollen\Http\ResponseInterface;
 interface PwaServiceWorkerInterface
 {
     /**
-     * Réponse HTTP de la définition du Service Worker (au format JAVASCRIPT)
+     * Ajout de scripts JS au Service Worker.
      *
-     * @return ResponseInterface
+     * @param string scripts
+     *
+     * @return static
      */
-    public function response(): ResponseInterface;
+    public function appendScripts(string $scripts): PwaServiceWorkerInterface;
 
     /**
      * Récupération des scripts JS de déclaration du Service Worker.
@@ -21,4 +23,13 @@ interface PwaServiceWorkerInterface
      * @return string
      */
     public function getRegisterScripts(): string;
+
+    /**
+     * Réponse HTTP de la définition du Service Worker (au format JAVASCRIPT)
+     *
+     * @return ResponseInterface
+     */
+    public function response(): ResponseInterface;
+
+
 }
