@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pollen\Pwa\Adapters;
 
 use Pollen\Pwa\AbstractPwaAdapter;
+use RuntimeException;
 
 class WpPwaAdapter extends AbstractPwaAdapter
 {
@@ -13,8 +14,16 @@ class WpPwaAdapter extends AbstractPwaAdapter
      */
     public function boot(): void
     {
+        if (!function_exists('add_action')) {
+            throw new RuntimeException('add_action function is missing.');
+        }
+
         if (!$this->isBooted()) {
             add_action('init', function () {
+                if (!function_exists('get_bloginfo')) {
+                    throw new RuntimeException('get_bloginfo function is missing.');
+                }
+
                 $this->pwa()->manifest()
                     ->setDefault('name', get_bloginfo('name'))
                     ->setDefault('short_name', get_bloginfo('name'));
