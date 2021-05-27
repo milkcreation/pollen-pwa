@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
-use Pollen\Container\BaseServiceProvider;
+use Pollen\Container\BootableServiceProvider;
 use Pollen\Partial\PartialManagerInterface;
 use Pollen\Pwa\Adapters\WpPwaAdapter;
 use Pollen\Pwa\Controller\PwaController;
@@ -12,7 +12,7 @@ use Pollen\Pwa\Controller\PwaOfflineController;
 use Pollen\Pwa\Partial\CameraCapturePartial;
 use Pollen\Pwa\Partial\PwaInstallerPartial;
 
-class PwaServiceProvider extends BaseServiceProvider
+class PwaServiceProvider extends BootableServiceProvider
 {
     /**
      * Liste des services fournis.

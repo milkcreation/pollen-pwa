@@ -32,12 +32,12 @@ class PwaOfflineController extends BaseViewController
      */
     public function index(): ResponseInterface
     {
-        $this->params([
+        $this->datas([
             'css' => $this->css()->getContent(),
             'js' => $this->js()->getContent()
         ]);
 
-        return $this->view('index', $this->params()->all());
+        return $this->view('index');
     }
 
     /**
