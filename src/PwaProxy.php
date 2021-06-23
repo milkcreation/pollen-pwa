@@ -12,11 +12,7 @@ use RuntimeException;
  */
 trait PwaProxy
 {
-    /**
-     * Instance du gestionnaire de Pwa.
-     * @var PwaInterface|null
-     */
-    private $pwa;
+    private ?PwaInterface $pwa = null;
 
     /**
      * Récupération de l'instance du gestionnaire de Pwa.

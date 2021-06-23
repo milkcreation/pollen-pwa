@@ -31,6 +31,14 @@ class PwaServiceProvider extends BootableServiceProvider
     /**
      * @inheritDoc
      */
+    public function boot(): void
+    {
+        $this->getContainer()->get(PwaInterface::class);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function register(): void
     {
         $this->getContainer()->share(

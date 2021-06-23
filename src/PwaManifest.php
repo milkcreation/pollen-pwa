@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
-use Pollen\Http\Response;
-use Pollen\Http\ResponseInterface;
 use Pollen\Http\UrlHelper;
 use Pollen\Http\UrlManipulator;
 use Throwable;
@@ -21,19 +19,19 @@ class PwaManifest implements PwaManifestInterface
      * Liste des variables par défaut.
      * @var array|null
      */
-    private $defaults;
+    private ?array $defaults = null;
 
     /**
      * Liste des variables déclarés.
-     * @var array
+     * @var array|null
      */
-    private $vars;
+    private ?array $vars = null;
 
     /**
      * Listes des clés de qualification des variables.
-     * @var array
+     * @var string[]
      */
-    private $varKeys = [
+    private array $varKeys = [
         'background_color',
         'description',
         'dir',
@@ -52,101 +50,89 @@ class PwaManifest implements PwaManifestInterface
 
     /**
      * Icône IOS Safari.
-     * @var string
      */
-    protected $apple_touch_icon;
+    protected ?string $apple_touch_icon = null;
 
     /**
      * Couleur de fond attendue pour l'application web.
-     * @var string
      */
-    protected $background_color;
+    protected ?string $background_color = null;
 
     /**
      * Description générale de ce que fait l'application web.
-     * @var string
      */
-    protected $description;
+    protected ?string $description = null;
 
     /**
      * Direction du texte pour le nom, le nom court et les membres de description.
-     * @var string ltr|rtl|auto
+     * @var string|null ltr|rtl|auto
      */
-    protected $dir;
+    protected ?string $dir = null;
 
     /**
      * Mode d'affichage préféré du développeur pour l'application web.
-     * @var string fullscreen|standalone|minimal-ui|browser
+     * @var string|null fullscreen|standalone|minimal-ui|browser
      */
-    protected $display;
+    protected ?string $display = null;
 
     /**
      * Ensemble d'images qui peuvent servir d'icônes pour l'application dans différents contextes.
-     * @var array
+     * @var string[]|null
      */
-    protected $icons;
+    protected ?array $icons = null;
 
     /**
      * Langue principale pour les valeurs des membres name et short_name.
-     * @var string
      */
-    protected $lang;
+    protected string $lang = 'en';
 
     /**
      * Nom de qualification de l'application, lisible pour un humain, car il est destiné à être affiché à l'utilisateur.
-     * @var string
      */
-    protected $name;
+    protected ?string $name = null;
 
     /**
      * Orientation par défaut pour tout le premier niveau d'applications
-     * @var string
+     * @var string|null
      *     any|natural|landscape|landscape-primary|landscape-secondary|portrait|portrait-primary|portrait-secondary
      */
-    protected $orientation;
+    protected ?string $orientation = null;
 
     /**
      * Valeur booléenne qui indique à l'agent utilisateur si une application liée doit être préférée à l'application web.
-     * @var bool
      */
-    protected $prefer_related_applications;
+    protected bool $prefer_related_applications = false;
 
     /**
      * Ensemble d'objets d'application représentant les applications natives installables par la plate-forme
      * sous-jacente ou accessibles à cette plate-forme.
-     * @var array
      */
-    protected $related_applications;
+    protected array $related_applications = [];
 
     /**
      * "scope" (portée) de navigation du contexte applicatif de cette application web.
-     * @var string
      */
-    protected $scope;
+    protected ?string $scope = null;
 
     /**
      * Nom court pour l'application web, compréhensible pour un humain.
-     * @var string
      */
-    protected $short_name;
+    protected ?string $short_name = null;
 
     /**
      * URL qui se charge lorsque l'utilisateur lance une application à partir d'un périphérique
-     * @var string
      */
-    protected $start_url;
+    protected ?string $start_url = null;
 
     /**
      * Couleur du thème par défaut pour une application.
-     * @var string
      */
-    protected $theme_color;
+    protected ?string $theme_color = null;
 
     /**
      * Activation de la contrainte des clés de variables de qualification.
-     * @var bool
      */
-    protected $isVarKeysConstraint = true;
+    protected bool $isVarKeysConstraint = true;
 
     /**
      * @param array $vars
@@ -195,17 +181,13 @@ class PwaManifest implements PwaManifestInterface
         if (!isset($this->defaults['icons'])) {
             $this->defaults['icons'] = [
                 [
-                    'src'     => $urlHelper->getAbsoluteUrl(
-                        $this->pwa()->resources('/assets/dist/img/192.png')
-                    ),
+                    'src'     => $this->pwa()->getEndpointUrl('icon', ['icon' => '192.png']),
                     'sizes'   => '192x192',
                     'type'    => 'image/png',
                     'purpose' => 'any maskable',
                 ],
                 [
-                    'src'     => $urlHelper->getAbsoluteUrl(
-                        $this->pwa()->resources('/assets/dist/img/512.png')
-                    ),
+                    'src'     => $this->pwa()->getEndpointUrl('icon', ['icon' => '512.png']),
                     'sizes'   => '512x512',
                     'type'    => 'image/png',
                     'purpose' => 'any maskable',
@@ -233,15 +215,13 @@ class PwaManifest implements PwaManifestInterface
             $this->defaults['related_applications'] = [
                 [
                     'platform' => 'webapp',
-                    'url'      => $urlHelper->getAbsoluteUrl('/manifest.webmanifest'),
+                    'url'      => $this->pwa()->getEndpointUrl('manifest'),
                 ],
             ];
         }
 
         if (!isset($this->defaults['apple_touch_icon'])) {
-            $this->defaults['apple_touch_icon'] = $urlHelper->getAbsoluteUrl(
-                $this->pwa()->resources('/assets/dist/img/192.png')
-            );
+            $this->defaults['apple_touch_icon'] = $this->pwa()->getEndpointUrl('icon', ['icon' => '192.png']);
         }
 
         return $this->defaults;
@@ -300,7 +280,9 @@ class PwaManifest implements PwaManifestInterface
      */
     public function metaRegister(): string
     {
-        return "<link rel=\"manifest\" href=\"" . (new UrlHelper())->getRelativePath('/manifest.webmanifest') . "\">";
+        $href = $this->pwa()->getEndpointUrl('manifest');
+
+        return "<link rel=\"manifest\" href=\"$href\">";
     }
 
     /**
@@ -317,14 +299,6 @@ class PwaManifest implements PwaManifestInterface
     public function resetVars(): void
     {
         $this->vars = null;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function response(): ResponseInterface
-    {
-        return new Response($this->json(), 200, ['Content-Type' => 'application/manifest+json']);
     }
 
     /**
@@ -450,7 +424,7 @@ class PwaManifest implements PwaManifestInterface
     /**
      * @inheritDoc
      */
-    public function setPreferRelatedApplications(string $prefer_related_applications): PwaManifestInterface
+    public function setPreferRelatedApplications(bool $prefer_related_applications): PwaManifestInterface
     {
         $this->resetVars();
 
@@ -462,7 +436,7 @@ class PwaManifest implements PwaManifestInterface
     /**
      * @inheritDoc
      */
-    public function setRelatedApplications(string $related_applications): PwaManifestInterface
+    public function setRelatedApplications(array $related_applications): PwaManifestInterface
     {
         $this->resetVars();
 

@@ -8,7 +8,13 @@ use Pollen\Http\ResponseInterface;
 use Pollen\Routing\BaseViewController;
 use Pollen\Pwa\PwaInterface;
 use Pollen\Pwa\PwaProxy;
+use Pollen\Support\ProxyResolver;
+use Pollen\View\Engines\Plates\PlatesViewEngine;
+use Pollen\View\ViewInterface;
+use Pollen\View\ViewManager;
+use Pollen\View\ViewManagerInterface;
 use Psr\Container\ContainerInterface as Container;
+use RuntimeException;
 
 class PwaOfflineController extends BaseViewController
 {
@@ -26,18 +32,45 @@ class PwaOfflineController extends BaseViewController
     }
 
     /**
+     * Moteur d'affichage des gabarits d'affichage.
+     *
+     * @return ViewInterface
+     */
+    protected function getView(): ViewInterface
+    {
+        if ($this->view === null) {
+            try {
+                $manager = ViewManager::getInstance();
+            } catch (RuntimeException $e) {
+                $manager = ProxyResolver::getInstance(
+                    ViewManagerInterface::class,
+                    ViewManager::class,
+                    method_exists($this, 'getContainer') ? $this->getContainer() : null
+                );
+            }
+            $this->view = $manager->createView(
+                (new PlatesViewEngine())->setDirectory($this->pwa()->resources('/views/offline'))
+            );
+        }
+
+        return $this->view;
+    }
+
+    /**
      * Page Html
      *
      * @return ResponseInterface
      */
     public function index(): ResponseInterface
     {
-        $this->datas([
-            'css' => $this->css()->getContent(),
-            'js' => $this->js()->getContent()
-        ]);
+        $this->datas(
+            [
+                'css' => $this->css()->getContent(),
+                'js'  => $this->js()->getContent(),
+            ]
+        );
 
-        return $this->view('index');
+        return $this->cachedResponse($this->view('index'));
     }
 
     /**
@@ -49,7 +82,9 @@ class PwaOfflineController extends BaseViewController
     {
         $content = file_get_contents($this->pwa()->resources('/assets/dist/css/offline.css'));
 
-        return $this->response($content, 200, ['Content-Type' => 'text/css']);
+        $response = $this->response($content, 200, ['Content-Type' => 'text/css']);
+
+        return $this->cachedResponse($response);
     }
 
     /**
@@ -61,14 +96,8 @@ class PwaOfflineController extends BaseViewController
     {
         $content = file_get_contents($this->pwa()->resources('/assets/dist/js/offline.js'));
 
-        return $this->response($content, 200, ['Content-Type' => 'application/javascript']);
-    }
+        $response = $this->response($content, 200, ['Content-Type' => 'text/javascript']);
 
-    /**
-     * @inheritDoc
-     */
-    public function viewEngineDirectory(): string
-    {
-        return $this->pwa()->resources('/views/offline');
+        return $this->cachedResponse($response);
     }
 }

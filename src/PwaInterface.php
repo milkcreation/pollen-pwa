@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
+use Pollen\Routing\RouteInterface;
 use Pollen\Support\Concerns\BootableTraitInterface;
 use Pollen\Support\Concerns\ConfigBagAwareTraitInterface;
 use Pollen\Support\Concerns\ResourcesAwareTraitInterface;
@@ -24,11 +25,22 @@ interface PwaInterface extends
     RouterProxyInterface
 {
     /**
-     * Initialisation du gestionnaire d'optimisation.
+     * Chargement.
      *
      * @return static
      */
     public function boot(): PwaInterface;
+
+    /**
+     * Récupération de l'url.
+     *
+     * @param string $endpoint
+     * @param array $args
+     * @param bool $isAbsolute
+     *
+     * @return string
+     */
+    public function getEndpointUrl(string $endpoint, array $args = [], bool $isAbsolute = false): string;
 
     /**
      * Récupération de la liste des variables globales.
