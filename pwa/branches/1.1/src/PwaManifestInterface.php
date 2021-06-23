@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
-use Pollen\Http\ResponseInterface;
+use Pollen\Support\Proxy\RouterProxyInterface;
 
 interface PwaManifestInterface
 {
@@ -67,13 +67,6 @@ interface PwaManifestInterface
      * @return void
      */
     public function resetVars(): void;
-
-    /**
-     * Réponse HTTP du fichier manifest (au format JSON)
-     *
-     * @return ResponseInterface
-     */
-    public function response(): ResponseInterface;
 
     /**
      * @param string $apple_touch_icon
@@ -149,18 +142,18 @@ interface PwaManifestInterface
     public function setOrientation(string $orientation): PwaManifestInterface;
 
     /**
-     * @param string $prefer_related_applications
+     * @param bool $prefer_related_applications
      *
      * @return PwaManifestInterface
      */
-    public function setPreferRelatedApplications(string $prefer_related_applications): PwaManifestInterface;
+    public function setPreferRelatedApplications(bool $prefer_related_applications): PwaManifestInterface;
 
     /**
-     * @param string $related_applications
+     * @param array $related_applications
      *
      * @return PwaManifestInterface
      */
-    public function setRelatedApplications(string $related_applications): PwaManifestInterface;
+    public function setRelatedApplications(array $related_applications): PwaManifestInterface;
 
     /**
      * @param string $scope

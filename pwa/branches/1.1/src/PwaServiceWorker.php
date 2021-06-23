@@ -4,30 +4,15 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
-use Pollen\Http\Response;
-use Pollen\Http\ResponseInterface;
-use Pollen\Http\UrlHelper;
-use Throwable;
-
 class PwaServiceWorker implements PwaServiceWorkerInterface
 {
     use PwaProxy;
 
-    /**
-     * Liste des scripts ajoutés au Service Worker.
-     * @var array
-     */
-    protected $appendScripts = [];
+    protected array $appendScripts = [];
 
-    /**
-     * @var string
-     */
-    protected $serviceWorkerPath;
+    protected string $serviceWorkerPath = '';
 
-    /**
-     * @var string
-     */
-    protected $serviceWorkerRegisterPath;
+    protected string $serviceWorkerRegisterPath = '';
 
     /**
      * @param PwaInterface|null $pwa
@@ -52,32 +37,18 @@ class PwaServiceWorker implements PwaServiceWorkerInterface
     /**
      * @inheritDoc
      */
-    public function getRegisterScripts(): string
+    public function getAppendedScripts(): array
     {
-        $urlHelper = new UrlHelper();
-        $src = $urlHelper->getAbsoluteUrl($this->pwa()->resources('/assets/dist/js/sw-register.js'));
-
-        return "<script type=\"text/javascript\" src=\"$src\"></script>";
+        return $this->appendScripts;
     }
 
     /**
      * @inheritDoc
      */
-    public function response(): ResponseInterface
+    public function getRegisterScripts(): string
     {
-        $vars = $this->pwa()->getGlobalVars();
+        $src = $this->pwa()->getEndpointUrl('register');
 
-        try {
-            $vars = json_encode($vars, JSON_THROW_ON_ERROR);
-        } catch (Throwable $e) {
-            $vars = '{}';
-        }
-        $jsVars = "const PWA=$vars";
-
-        $swScripts = file_get_contents($this->pwa()->resources('/assets/dist/js/sw.js'));
-
-        return new Response(
-            $jsVars . $swScripts . implode(PHP_EOL, $this->appendScripts), 200, ['Content-Type' => 'application/javascript']
-        );
+        return "<script type=\"text/javascript\" src=\"$src\"></script>";
     }
 }
