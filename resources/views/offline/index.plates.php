@@ -9,11 +9,11 @@
 <html <?php language_attributes(); ?>>
 <!--<![endif]-->
 <head>
-    <meta charset="<?php echo strtolower(get_bloginfo('charset')); ?>"/>
+    <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title><?php _e('Application Hors-Ligne', 'pollen-pwa'); ?></title>
-    <style type="text/css" media="all"><?php echo $this->get('css', ''); ?></style>
+    <style media="all"><?php echo $this->get('css', ''); ?></style>
 </head>
 
 <body class="PwaOffline">
