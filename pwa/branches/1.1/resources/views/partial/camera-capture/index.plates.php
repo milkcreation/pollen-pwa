@@ -10,7 +10,7 @@
 
     <div class="PwaCameraCapture-handler">
         <button id="takePhoto" class="PwaButton--1 PwaButton--large PwaCameraCapture-handlerButton">
-            <?php _e('Prendre une photo', 'tify'); ?>
+            <?php echo 'Prendre une photo'; ?>
         </button>
     </div>
 

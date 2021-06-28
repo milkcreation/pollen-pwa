@@ -9,7 +9,6 @@ use Pollen\Routing\BaseViewController;
 use Pollen\Pwa\PwaInterface;
 use Pollen\Pwa\PwaProxy;
 use Pollen\Support\ProxyResolver;
-use Pollen\View\Engines\Plates\PlatesViewEngine;
 use Pollen\View\ViewInterface;
 use Pollen\View\ViewManager;
 use Pollen\View\ViewManagerInterface;
@@ -48,9 +47,9 @@ class PwaOfflineController extends BaseViewController
                     method_exists($this, 'getContainer') ? $this->getContainer() : null
                 );
             }
-            $this->view = $manager->createView(
-                (new PlatesViewEngine())->setDirectory($this->pwa()->resources('/views/offline'))
-            );
+
+            $this->view = $manager->createView('plates')
+                ->setDirectory($this->pwa()->resources('/views/offline'));
         }
 
         return $this->view;
