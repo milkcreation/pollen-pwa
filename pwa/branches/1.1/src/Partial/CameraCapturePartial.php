@@ -23,9 +23,9 @@ class CameraCapturePartial extends AbstractPwaPartial
                         //'controls',
                         'autoplay',
                         'muted',
-                        'poster' => $urlHelper->getAbsoluteUrl(
+                        /*'poster' => $urlHelper->getAbsoluteUrl(
                             $this->pwa()->resources('/assets/src/img/photo-camera.png')
-                        ),
+                        ),*/
                     ],
                     'tag'   => 'video',
                 ],
