@@ -7,7 +7,7 @@
     "component",
     "pwa"
   ],
-  "time": "2021-06-29",
+  "time": "2021-07-01",
   "license": "MIT",
   "authors": [
     {
@@ -23,6 +23,7 @@
   ],
   "require": {
     "php": "^7.4 || ^8.0",
+    "pollen-solutions/event": "^1.0",
     "pollen-solutions/http": "^1.0",
     "pollen-solutions/partial": "^1.0",
     "pollen-solutions/routing": "^1.0",

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
-use Pollen\Support\Proxy\RouterProxyInterface;
+use Pollen\Support\Proxy\EventProxyInterface;
 
-interface PwaManifestInterface
+interface PwaManifestInterface extends EventProxyInterface, PwaProxyInterface
 {
     /**
      * Récupération de la liste des variables par défaut.

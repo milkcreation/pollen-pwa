@@ -4,8 +4,15 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
+use Pollen\Asset\AssetManagerInterface;
+use Pollen\Asset\Assets\CdnAsset;
+use Pollen\Asset\Assets\InlineAsset;
+use Pollen\Event\TriggeredEvent;
+use Pollen\Support\Proxy\EventProxy;
+
 class PwaServiceWorker implements PwaServiceWorkerInterface
 {
+    use EventProxy;
     use PwaProxy;
 
     protected array $appendScripts = [];

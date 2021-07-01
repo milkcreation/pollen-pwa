@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
+use Pollen\Asset\AssetManagerInterface;
+use Pollen\Asset\Assets\CdnAsset;
+use Pollen\Asset\Assets\InlineAsset;
+use Pollen\Event\TriggeredEvent;
 use Pollen\Http\UrlHelper;
 use Pollen\Pwa\Adapters\WpPwaAdapter;
 use Pollen\Support\Concerns\BootableTrait;
@@ -144,6 +148,68 @@ class Pwa implements PwaInterface
             $this->routes['offline.html'] = $this->router()->get("$routePrefix/offline.html", [$offlineController, 'index']);
             $this->routes['offline.css'] = $this->router()->get("$routePrefix/offline.css", [$offlineController, 'css']);
             $this->routes['offline.js'] = $this->router()->get("$routePrefix/offline.js", [$offlineController, 'js']);
+
+            /** Asset */
+            if ($this->config('asset.autoloader', true) === true) {
+                $this->event()->one(
+                    'asset.handle-head.before',
+                    function (TriggeredEvent $event, AssetManagerInterface $assetManager) {
+                        // - Manifest
+                        $assetManager->enqueueLink('manifest', $this->getEndpointUrl('manifest', [], true))
+                            ->setBefore('<!-- PWA Manifest -->')
+                            ->setAfter('<!-- / PWA Manifest -->');
+
+                        $icon = $this->manifest()->getVars('apple_touch_icon');
+                        $color = $this->manifest()->getVars('theme_color');
+
+                        if ($icon || $color) {
+                            $before = '<!-- PWA MetaTags -->';
+                            $after = '<!-- / PWA MetaTags -->';
+
+                            if ($icon) {
+                                $queue = $assetManager->enqueueLink('apple-touch-icon', $icon)
+                                    ->setBefore($before);
+                                if (!$color) {
+                                    $queue->setAfter($after);
+                                }
+                            }
+
+                            if ($color) {
+                                $queue = $assetManager->enqueueLink('theme-color', $color)
+                                    ->setAfter($after);
+                                if (!$icon) {
+                                    $queue->setBefore($before);
+                                }
+                            }
+                        }
+
+                        // - Global Vars
+                        $vars = $this->getGlobalVars();
+
+                        try {
+                            $vars = json_encode($vars, JSON_THROW_ON_ERROR);
+                        } catch (Throwable $e) {
+                            $vars = '{}';
+                        }
+
+                        $jsVars = "const PWA=$vars";
+
+                        $assetManager->enqueueJs(new InlineAsset('pwa-global_vars', $jsVars))
+                            ->setBefore('<!-- PWA Global Vars -->')
+                            ->setAfter('<!-- / PWA Global Vars -->');
+                    }
+                );
+
+                $this->event()->one(
+                    'asset.handle-footer.before',
+                    function (TriggeredEvent $event, AssetManagerInterface $assetManager) {
+                        $assetManager->enqueueJs(
+                            new CdnAsset('pwa-sw_register', $this->getEndpointUrl('register', [], true)), true)
+                            ->setBefore('<!-- PWA Service Worker Registration -->')
+                            ->setAfter('<!-- / PWA Service Worker Registration -->');
+                    }
+                );
+            }
 
             /** Initialisation de l'adapteur Wordpress */
             if ($this->adapter === null && defined('WPINC')) {
