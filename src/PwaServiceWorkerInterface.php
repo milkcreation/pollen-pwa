@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
-interface PwaServiceWorkerInterface
+use Pollen\Support\Proxy\EventProxyInterface;
+
+interface PwaServiceWorkerInterface extends EventProxyInterface, PwaProxyInterface
 {
     /**
      * Ajout de scripts JS au Service Worker.

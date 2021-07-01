@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Pollen\Pwa;
 
+use Pollen\Asset\AssetManagerInterface;
+use Pollen\Asset\Queues\LinkTagQueue;
+use Pollen\Event\TriggeredEvent;
 use Pollen\Http\UrlHelper;
 use Pollen\Http\UrlManipulator;
+use Pollen\Support\Proxy\EventProxy;
 use Throwable;
 
 /**
@@ -13,6 +17,7 @@ use Throwable;
  */
 class PwaManifest implements PwaManifestInterface
 {
+    use EventProxy;
     use PwaProxy;
 
     /**
@@ -45,7 +50,7 @@ class PwaManifest implements PwaManifestInterface
         'scope',
         'short_name',
         'start_url',
-        'theme_color'
+        'theme_color',
     ];
 
     /**
@@ -99,7 +104,8 @@ class PwaManifest implements PwaManifestInterface
     protected ?string $orientation = null;
 
     /**
-     * Valeur booléenne qui indique à l'agent utilisateur si une application liée doit être préférée à l'application web.
+     * Valeur booléenne qui indique à l'agent utilisateur si une application liée doit être préférée à l'application
+     * web.
      */
     protected bool $prefer_related_applications = false;
 

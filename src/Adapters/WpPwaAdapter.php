@@ -29,53 +29,47 @@ class WpPwaAdapter extends AbstractPwaAdapter
                     ->setDefault('short_name', get_bloginfo('name'));
             });
 
-            add_action(
-                'wp_head',
-                function () {
-                    if ($this->pwa()->config('wordpress.autoload', true) === true) {
+            if ($this->pwa()->config('asset.autoloader', true) === true) {
+                add_action(
+                    'wp_head',
+                    function () {
                         echo '<!-- PWA Manifest -->';
                         echo $this->pwa()->manifest()->metaRegister();
                         echo '<!-- / PWA Manifest -->';
-                    }
-                },
-                1
-            );
+                    },
+                    1
+                );
 
-            add_action(
-                'wp_head',
-                function () {
-                    if ($this->pwa()->config('wordpress.autoload', true) === true) {
+                add_action(
+                    'wp_head',
+                    function () {
                         echo '<!-- PWA MetaTags -->';
                         echo $this->pwa()->manifest()->metaAppleTouchIcon();
                         echo $this->pwa()->manifest()->metaThemeColor();
                         echo '<!-- / PWA MetaTags -->';
-                    }
-                },
-                5
-            );
+                    },
+                    5
+                );
 
-            add_action(
-                'wp_head',
-                function () {
-                    if ($this->pwa()->config('wordpress.autoload', true) === true) {
+                add_action(
+                    'wp_head',
+                    function () {
                         echo '<!-- PWA Global Vars -->';
                         echo $this->pwa()->getGlobalVarsScripts();
                         echo '<!-- / PWA Global Vars -->';
-                    }
-                },
-                25
-            );
+                    },
+                    25
+                );
 
-            add_action(
-                'wp_footer',
-                function () {
-                    if ($this->pwa()->config('wordpress.autoload', true) === true) {
+                add_action(
+                    'wp_footer',
+                    function () {
                         echo '<!-- PWA Service Worker Registration -->';
                         echo $this->pwa()->serviceWorker()->getRegisterScripts();
                         echo '<!-- / PWA Service Worker Registration -->';
                     }
-                }
-            );
+                );
+            }
 
             $this->setBooted();
         }
