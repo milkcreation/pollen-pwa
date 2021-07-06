@@ -22,7 +22,6 @@ use Pollen\Support\Proxy\RouterProxy;
 use Pollen\Routing\RouteInterface;
 use Pollen\Pwa\Controller\PwaController;
 use Pollen\Pwa\Controller\PwaOfflineController;
-use Pollen\Pwa\Partial\CameraCapturePartial;
 use Pollen\Pwa\Partial\PwaInstallerPartial;
 use Psr\Container\ContainerInterface as Container;
 use RuntimeException;
@@ -122,11 +121,6 @@ class Pwa implements PwaInterface
 
             /** Partials */
             $this->partial()
-                ->register(
-                    'pwa-camera-capture',
-                    $this->containerHas(CameraCapturePartial::class)
-                        ? CameraCapturePartial::class : new CameraCapturePartial($this, $this->partial())
-                )
                 ->register(
                     'pwa-installer',
                     $this->containerHas(PwaInstallerPartial::class)
