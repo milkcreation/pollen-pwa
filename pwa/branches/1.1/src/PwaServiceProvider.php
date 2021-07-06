@@ -9,7 +9,6 @@ use Pollen\Partial\PartialManagerInterface;
 use Pollen\Pwa\Adapters\WpPwaAdapter;
 use Pollen\Pwa\Controller\PwaController;
 use Pollen\Pwa\Controller\PwaOfflineController;
-use Pollen\Pwa\Partial\CameraCapturePartial;
 use Pollen\Pwa\Partial\PwaInstallerPartial;
 
 class PwaServiceProvider extends BootableServiceProvider
@@ -19,7 +18,6 @@ class PwaServiceProvider extends BootableServiceProvider
      * @var array
      */
     protected $provides = [
-        CameraCapturePartial::class,
         PwaInstallerPartial::class,
         PwaController::class,
         PwaInterface::class,
@@ -117,16 +115,6 @@ class PwaServiceProvider extends BootableServiceProvider
      */
     public function registerPartialDrivers(): void
     {
-        $this->getContainer()->add(
-            CameraCapturePartial::class,
-            function () {
-                return new CameraCapturePartial(
-                    $this->getContainer()->get(PwaInterface::class),
-                    $this->getContainer()->get(PartialManagerInterface::class)
-                );
-            }
-        );
-
         $this->getContainer()->add(
             PwaInstallerPartial::class,
             function () {
